@@ -1,92 +1,208 @@
+/* Import Font Modern dari Google (Inter) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+body {
+  background-color: #f3f4f6; /* Warna latar belakang abu-abu sangat muda/bersih */
+  color: #1f2937;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
 .container {
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 20px;
-  font-family: Arial, sans-serif;
+  max-width: 1100px;
+  margin: 40px auto;
+  background: #ffffff;
+  padding: 30px 40px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05); /* Efek melayang elegan */
 }
 
-h1 { color: #333; }
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-}
-
-th, td {
-  padding: 12px 15px;
-  text-align: left;
-  border-bottom: 1px solid #ddd;
-}
-
-th { background-color: #f4f4f4; color: #333; }
-
-.badge {
-  padding: 5px 10px;
-  border-radius: 20px;
-  color: white;
-  font-size: 0.85em;
-  font-weight: bold;
-}
-
-/* Styling Tambahan untuk Form dan Tombol */
+/* --- HEADER --- */
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 30px;
+  border-bottom: 2px solid #f3f4f6;
+  padding-bottom: 20px;
 }
 
+.header h1 { 
+  margin: 0 0 5px 0;
+  color: #111827;
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.header p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 0.95rem;
+}
+
+/* --- TOMBOL UMUM --- */
 .btn {
-  padding: 10px 15px;
+  padding: 10px 18px;
   border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-weight: bold;
-}
-.btn-primary { background-color: #007bff; color: white; }
-.btn-danger { background-color: #dc3545; color: white; }
-.btn-success { background-color: #28a745; color: white; width: 100%; margin-top: 10px; }
-
-.card-form {
-  background: white;
-  padding: 20px;
   border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  margin-bottom: 20px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+.btn:hover { transform: translateY(-1px); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+.btn-primary { background-color: #4f46e5; color: white; } /* Ungu/Biru modern */
+.btn-primary:hover { background-color: #4338ca; }
+.btn-danger { background-color: #ef4444; color: white; }
+.btn-danger:hover { background-color: #dc2626; }
+.btn-success { background-color: #10b981; color: white; width: 100%; margin-top: 15px; padding: 12px; }
+
+/* --- FORM & INPUT --- */
+.card-form {
+  background: #f9fafb;
+  padding: 20px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  margin-bottom: 25px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
-.card-form.bg-light {
-  background-color: #f8f9fa;
-  border: 1px solid #ddd;
-}
-
-.card-form h3 { margin-top: 0; margin-bottom: 10px; }
+.card-form h3 { margin: 0 0 10px 0; font-size: 1.2rem; color: #374151; }
+.form-group { display: flex; gap: 15px; }
 .card-form input, .card-form select {
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  padding: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
   width: 100%;
   box-sizing: border-box;
+  font-family: inherit;
+  font-size: 0.95rem;
+  transition: border-color 0.2s;
+}
+.card-form input:focus, .card-form select:focus {
+  outline: none;
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
 }
 
-.form-group {
+/* --- TABEL MODERN --- */
+.table-responsive {
+  overflow-x: auto;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: white;
+  text-align: left;
+}
+
+th {
+  background-color: #f9fafb;
+  color: #4b5563;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 16px 20px;
+  font-weight: 600;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+td {
+  padding: 16px 20px;
+  border-bottom: 1px solid #e5e7eb;
+  color: #374151;
+  font-size: 0.95rem;
+  vertical-align: middle;
+}
+
+/* Efek Sorot saat Mouse di Atas Baris */
+tr:hover td {
+  background-color: #f9fafb;
+}
+
+/* Latar Khusus VIP */
+.row-priority td {
+  background-color: #fffbeb; /* Kuning sangat halus */
+}
+.row-priority:hover td {
+  background-color: #fef3c7;
+}
+
+/* --- BADGE STATUS (Gaya Pastel Profesional) --- */
+.badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: inline-block;
+  text-align: center;
+  min-width: 80px;
+}
+/* Warna lembut teks gelap ala Jira/Linear */
+.status-waiting { background-color: #fef08a; color: #854d0e; }
+.status-proses { background-color: #bfdbfe; color: #1e3a8a; }
+.status-done { background-color: #bbf7d0; color: #166534; }
+
+
+/* --- UI TOMBOL AKSI ADMIN --- */
+.admin-actions {
   display: flex;
-  gap: 10px;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 160px;
 }
 
-.status-waiting { 
-  background-color: #ffc107; /* Kuning */
-  color: #000; 
-} 
-.status-proses { 
-  background-color: #0d6efd; /* Biru */
-  color: white; 
-} 
-.status-done { 
-  background-color: #28a745; /* Hijau */
-  color: white; 
+.action-row {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.btn-action {
+  flex: 1;
+  padding: 6px 4px;
+  font-size: 0.8rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.2s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-block { width: 100%; }
+.btn-gold { background-color: #fbbf24; color: #78350f; }
+.btn-gold:hover { background-color: #f59e0b; }
+.btn-outline-dark { background-color: white; border: 1px solid #d1d5db; color: #374151; }
+.btn-outline-dark:hover { background-color: #f3f4f6; }
+.btn-gray { background-color: #f3f4f6; color: #4b5563; border: 1px solid #d1d5db; }
+.btn-gray:hover:not(:disabled) { background-color: #e5e7eb; }
+.btn-edit { background-color: #3b82f6; color: white; }
+.btn-edit:hover { background-color: #2563eb; }
+.btn-del { background-color: #ef4444; color: white; }
+.btn-del:hover { background-color: #dc2626; }
+
+.btn-action:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background-color: #f3f4f6;
+  color: #9ca3af;
+  border-color: #e5e7eb;
+}
+
+/* Responsivitas untuk layar kecil/HP */
+@media (max-width: 768px) {
+  .header { flex-direction: column; align-items: flex-start; gap: 15px; }
+  .form-group { flex-direction: column; }
+  .container { margin: 10px; padding: 20px; }
 }

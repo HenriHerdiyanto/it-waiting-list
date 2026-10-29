@@ -9,16 +9,17 @@ function App() {
   const [showLoginForm, setShowLoginForm] = useState(false);
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
 
-  // State untuk Form Tambah/Edit
+  // Tambahkan is_priority di state form
   const [newReq, setNewReq] = useState({
     nama_orang_req: '',
-    divisi: 'Finance',
+    divisi: '',
     deskripsi: '',
     PIC: '',
-    status: 'Waiting'
+    status: 'Waiting',
+    urutan: 0,
+    is_priority: false
   });
   
-  // State untuk melacak data mana yang sedang di-edit
   const [editId, setEditId] = useState(null);
 
   const API_URL = 'https://6ae305fe933120ae20f80e32.mockapi.io/requests';
@@ -31,11 +32,28 @@ function App() {
     fetchData();
   }, []);
 
+  // Fungsi pengurutan pusat: Sortir Prioritas (true) lebih dulu, lalu berdasarkan urutan angka
+  const sortData = (data) => {
+    return [...data].sort((a, b) => {
+      if (a.is_priority === b.is_priority) {
+        return a.urutan - b.urutan; // Jika status prioritas sama, urutkan berdasarkan posisinya
+      }
+      return a.is_priority ? -1 : 1; // Prioritas (true) selalu di atas
+    });
+  };
+
   const fetchData = () => {
     fetch(API_URL)
       .then((response) => response.json())
       .then((data) => {
-        setRequests(data);
+        // Normalisasi data lama yang mungkin belum punya kolom is_priority
+        const normalizedData = data.map((item, index) => ({
+          ...item,
+          urutan: item.urutan !== undefined ? item.urutan : (index + 1),
+          is_priority: item.is_priority || false
+        }));
+        
+        setRequests(sortData(normalizedData));
         setLoading(false);
       })
       .catch((error) => console.error('Error fetching data:', error));
@@ -62,16 +80,14 @@ function App() {
 
   const resetForm = () => {
     setNewReq({
-      nama_orang_req: '', divisi: 'Finance', deskripsi: '', PIC: 'Belum ada', status: 'Waiting'
+      nama_orang_req: '', divisi: 'Finance', deskripsi: '', PIC: 'Belum ada', status: 'Waiting', urutan: 0, is_priority: false
     });
     setEditId(null);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
     if (editId) {
-      // Proses EDIT Data (PUT)
       fetch(`${API_URL}/${editId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -79,21 +95,27 @@ function App() {
       })
         .then((response) => response.json())
         .then((updatedData) => {
-          setRequests(requests.map(req => req.id === editId ? updatedData : req));
+          const newData = requests.map(req => req.id === editId ? updatedData : req);
+          setRequests(sortData(newData));
           resetForm();
           alert('Request berhasil diperbarui!');
         })
         .catch((error) => console.error('Error updating data:', error));
     } else {
-      // Proses TAMBAH Data (POST) - Biarkan json-server yang membuat ID-nya
+      let maxUrutan = 0;
+      if (requests.length > 0) {
+        maxUrutan = Math.max(...requests.map(r => r.urutan));
+      }
+      const payload = { ...newReq, urutan: maxUrutan + 1 };
+
       fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newReq),
+        body: JSON.stringify(payload),
       })
         .then((response) => response.json())
         .then((data) => {
-          setRequests([...requests, data]);
+          setRequests(sortData([...requests, data]));
           resetForm();
           alert('Request berhasil ditambahkan!');
         })
@@ -103,35 +125,98 @@ function App() {
 
   const handleDelete = (id) => {
     if (window.confirm('Yakin ingin menghapus request ini?')) {
-      fetch(`${API_URL}/${id}`, {
-        method: 'DELETE',
-      })
-        .then(() => {
-          setRequests(requests.filter(req => req.id !== id));
-        })
+      fetch(`${API_URL}/${id}`, { method: 'DELETE' })
+        .then(() => setRequests(requests.filter(req => req.id !== id)))
         .catch((error) => console.error('Error deleting data:', error));
     }
   };
 
-  // DIPERBAIKI: Memastikan semua properti dari baris yang diklik masuk ke state form
   const handleEditClick = (req) => {
-    setNewReq({
-      nama_orang_req: req.nama_orang_req,
-      divisi: req.divisi,
-      deskripsi: req.deskripsi,
-      PIC: req.PIC,
-      status: req.status
-    });
+    setNewReq({ ...req }); // Masukkan semua data ke form, termasuk status prioritasnya
     setEditId(req.id);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // DIPERBAIKI: Menyesuaikan class CSS dengan warna yang diminta
+  // --- FUNGSI PRIORITAS & POSISI BARU --- //
+
+  const togglePriority = (req) => {
+    const updatedItem = { ...req, is_priority: !req.is_priority };
+    const newRequests = requests.map(r => r.id === req.id ? updatedItem : r);
+    
+    setRequests(sortData(newRequests)); // UI langsung berubah
+    
+    fetch(`${API_URL}/${req.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updatedItem)
+    }).catch(err => console.error(err));
+  };
+
+  const handleMoveUp = (index) => {
+    const currentItem = requests[index];
+    // Cari item di atasnya yang memiliki status prioritas SAMA (agar tidak tabrakan beda kasta)
+    let prevIndex = -1;
+    for (let i = index - 1; i >= 0; i--) {
+      if (requests[i].is_priority === currentItem.is_priority) {
+        prevIndex = i; break;
+      }
+    }
+    
+    if (prevIndex === -1) return; // Jika tidak ada, berarti sudah paling atas di golongannya
+
+    const newRequests = [...requests];
+    const currentCopy = { ...currentItem };
+    const prevCopy = { ...newRequests[prevIndex] };
+
+    // Tukar angka urutannya
+    const tempUrutan = currentCopy.urutan;
+    currentCopy.urutan = prevCopy.urutan;
+    prevCopy.urutan = tempUrutan;
+
+    newRequests[index] = currentCopy;
+    newRequests[prevIndex] = prevCopy;
+    setRequests(sortData(newRequests));
+
+    Promise.all([
+      fetch(`${API_URL}/${currentCopy.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(currentCopy) }),
+      fetch(`${API_URL}/${prevCopy.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(prevCopy) })
+    ]);
+  };
+
+  const handleMoveDown = (index) => {
+    const currentItem = requests[index];
+    let nextIndex = -1;
+    for (let i = index + 1; i < requests.length; i++) {
+      if (requests[i].is_priority === currentItem.is_priority) {
+        nextIndex = i; break;
+      }
+    }
+    
+    if (nextIndex === -1) return;
+
+    const newRequests = [...requests];
+    const currentCopy = { ...currentItem };
+    const nextCopy = { ...newRequests[nextIndex] };
+
+    const tempUrutan = currentCopy.urutan;
+    currentCopy.urutan = nextCopy.urutan;
+    nextCopy.urutan = tempUrutan;
+
+    newRequests[index] = currentCopy;
+    newRequests[nextIndex] = nextCopy;
+    setRequests(sortData(newRequests));
+
+    Promise.all([
+      fetch(`${API_URL}/${currentCopy.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(currentCopy) }),
+      fetch(`${API_URL}/${nextCopy.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(nextCopy) })
+    ]);
+  };
+
   const getStatusColor = (status) => {
     switch (status.toLowerCase()) {
-      case 'waiting': return 'status-waiting'; // Kuning
-      case 'on proses': return 'status-proses'; // Biru
-      case 'done': return 'status-done'; // Hijau
+      case 'waiting': return 'status-waiting';
+      case 'on proses': return 'status-proses';
+      case 'done': return 'status-done';
       default: return '';
     }
   };
@@ -159,14 +244,12 @@ function App() {
           <h3>Login Admin</h3>
           <input 
             type="text" 
-            placeholder="Username (admin)" 
             required
             value={loginForm.username}
             onChange={(e) => setLoginForm({...loginForm, username: e.target.value})}
           />
           <input 
             type="password" 
-            placeholder="Password (admin123)" 
             required
             value={loginForm.password}
             onChange={(e) => setLoginForm({...loginForm, password: e.target.value})}
@@ -220,6 +303,21 @@ function App() {
               <option value="Done">Done</option>
             </select>
           </div>
+          
+          {/* Pilihan Checklist Prioritas Khusus untuk Admin */}
+          <div style={{ padding: '10px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <input 
+              type="checkbox" 
+              id="is_priority"
+              checked={newReq.is_priority}
+              onChange={(e) => setNewReq({...newReq, is_priority: e.target.checked})}
+              style={{ width: 'auto' }}
+            />
+            <label htmlFor="is_priority" style={{ fontWeight: 'bold', color: '#d39e00', cursor: 'pointer' }}>
+              ⭐ Tandai sebagai Prioritas Utama (Jalur VIP)
+            </label>
+          </div>
+
           <div className="form-group">
             <button type="submit" className={`btn ${editId ? 'btn-warning' : 'btn-success'}`}>
               {editId ? 'Update Request' : 'Simpan Request'}
@@ -240,46 +338,66 @@ function App() {
           <table>
             <thead>
               <tr>
-                <th>ID</th>
-                <th>Nama ( Divisi )</th>
+                <th>No</th>
+                <th>Nama Requester</th>
+                <th>Divisi</th>
                 <th>Deskripsi</th>
                 <th>PIC</th>
                 <th>Status</th>
-                {isLoggedIn && <th>Aksi</th>}
+                {isLoggedIn && <th>Aksi Admin</th>}
               </tr>
             </thead>
             <tbody>
-              {requests.map((req) => (
-                <tr key={req.id}>
-                  <td>{req.id}</td>
-                  <td>{req.nama_orang_req} | {req.divisi}</td>
-                  <td>{req.deskripsi}</td>
-                  <td>{req.PIC}</td>
-                  <td>
-                    <span className={`badge ${getStatusColor(req.status)}`}>
-                      {req.status}
-                    </span>
-                  </td>
-                  {isLoggedIn && (
+              {requests.map((req, index) => {
+                // Mengecek apakah tombol Naik/Turun harus didisable
+                const isFirstInGroup = index === 0 || requests[index - 1].is_priority !== req.is_priority;
+                const isLastInGroup = index === requests.length - 1 || requests[index + 1].is_priority !== req.is_priority;
+
+                return (
+                  <tr key={req.id} className={req.is_priority ? 'row-priority' : ''}>
+                    <td>{index + 1}</td>
                     <td>
-                      <div className="action-buttons">
-                        <button onClick={() => handleEditClick(req)} className="btn btn-sm btn-warning">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-pencil-square" viewBox="0 0 16 16">
-                            <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
-                            <path fillRule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"/>
-                          </svg>
-                        </button>
-                        <button onClick={() => handleDelete(req.id)} className="btn btn-sm btn-danger">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-trash" viewBox="0 0 16 16">
-                            <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5Zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5Zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6Z"/>
-                            <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1ZM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118ZM2.5 3h11V2h-11Z"/>
-                          </svg>
-                        </button>
-                      </div>
+                      {/* Bintang Muncul untuk semua orang jika status prioritas aktif */}
+                      {req.is_priority && <span title="Prioritas VIP" style={{fontSize: '1.2em', marginRight: '5px'}}>⭐</span>}
+                      {req.nama_orang_req}
                     </td>
-                  )}
-                </tr>
-              ))}
+                    <td>{req.divisi}</td>
+                    <td>{req.deskripsi}</td>
+                    <td>{req.PIC}</td>
+                    <td>
+                      <span className={`badge ${getStatusColor(req.status)}`}>
+                        {req.status}
+                      </span>
+                    </td>
+                    {isLoggedIn && (
+                      <td style={{width: '200px'}}>
+                        {/* Layout Kolom Aksi yang Jauh Lebih Rapi */}
+                        <div className="admin-actions">
+                          {/* Tombol Toggle Prioritas */}
+                          <button 
+                            onClick={() => togglePriority(req)} 
+                            className={`btn-action btn-block ${req.is_priority ? 'btn-outline-dark' : 'btn-gold'}`}
+                          >
+                            {req.is_priority ? '❌ Hapus Top VIP' : '⭐ Jadikan Top VIP'}
+                          </button>
+                          
+                          {/* Grup Tombol Posisi (Naik / Turun) */}
+                          <div className="action-row">
+                            <button onClick={() => handleMoveUp(index)} disabled={isFirstInGroup} className="btn-action btn-gray">🔼 Naik</button>
+                            <button onClick={() => handleMoveDown(index)} disabled={isLastInGroup} className="btn-action btn-gray">🔽 Turun</button>
+                          </div>
+
+                          {/* Grup Tombol Data (Edit / Hapus) */}
+                          <div className="action-row">
+                            <button onClick={() => handleEditClick(req)} className="btn-action btn-edit">✏️ Edit</button>
+                            <button onClick={() => handleDelete(req.id)} className="btn-action btn-del">🗑️ Hapus</button>
+                          </div>
+                        </div>
+                      </td>
+                    )}
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
