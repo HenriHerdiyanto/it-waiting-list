@@ -268,7 +268,7 @@ function App() {
 
       {/* FITUR BARU: PANEL PENCARIAN & FILTER */}
       <div className="filter-panel">
-      <textarea 
+      <input 
           placeholder="🔍 Cari nama atau deskripsi..." 
           value={searchQuery}
           onChange={(e) => { 
