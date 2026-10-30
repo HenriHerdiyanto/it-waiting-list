@@ -328,7 +328,7 @@ function App() {
                       <td>
                         {req.is_priority && <span title="Prioritas VIP" style={{fontSize: '1.2em', marginRight: '5px'}}>⭐</span>}
                         {req.nama_orang_req} <br />
-                        ( {req.divisi} )
+                        {req.divisi ? req.divisi : 'Management'}
                       </td>
                       <td>{req.deskripsi}</td>
                       <td>{req.PIC}</td>
