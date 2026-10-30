@@ -20,7 +20,7 @@ function App() {
   const [filterDivisi, setFilterDivisi] = useState('Semua');
   const [filterStatus, setFilterStatus] = useState('Semua');
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5; // Tampilkan 5 baris per halaman
+  const itemsPerPage = 10; // Tampilkan 5 baris per halaman
 
   const API_URL = 'https://6ae305fe933120ae20f80e32.mockapi.io/requests';
 
@@ -32,10 +32,31 @@ function App() {
     fetchData();
   }, []);
 
+  // --- FUNGSI SORTING BARU ---
   const sortData = (data) => {
+    // Buat bobot untuk status agar mudah diurutkan
+    const statusWeight = {
+      'On Proses': 1,
+      'Waiting': 2,
+      'Done': 3
+    };
+
     return [...data].sort((a, b) => {
-      if (a.is_priority === b.is_priority) return a.urutan - b.urutan;
-      return a.is_priority ? -1 : 1; 
+      // 1. Cek Prioritas (VIP selalu di atas)
+      if (a.is_priority !== b.is_priority) {
+        return a.is_priority ? -1 : 1; 
+      }
+
+      // 2. Jika sama-sama prioritas atau tidak prioritas, cek Status
+      const weightA = statusWeight[a.status] || 99; // 99 sebagai fallback jika status tidak dikenali
+      const weightB = statusWeight[b.status] || 99;
+      
+      if (weightA !== weightB) {
+        return weightA - weightB;
+      }
+
+      // 3. Jika statusnya juga sama, urutkan berdasarkan 'urutan'
+      return a.urutan - b.urutan;
     });
   };
 
@@ -122,7 +143,6 @@ function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // --- LOGIKA POSISI MENGGUNAKAN ID (Lebih Aman untuk Pagination) ---
   const togglePriority = (req) => {
     const updatedItem = { ...req, is_priority: !req.is_priority };
     setRequests(sortData(requests.map(r => r.id === req.id ? updatedItem : r)));
@@ -132,8 +152,11 @@ function App() {
   const handleMoveUp = (id) => {
     const index = requests.findIndex(r => r.id === id);
     let prevIndex = -1;
-    for (let i = index - 1; i >= 0; i--) {
-      if (requests[i].is_priority === requests[index].is_priority) { prevIndex = i; break; }
+    for (let i = index - 1; i >= 0; i--) { // Perbaikan sintaks index - 1
+      if (requests[i].is_priority === requests[index].is_priority && requests[i].status === requests[index].status) { 
+        prevIndex = i; 
+        break; 
+      }
     }
     if (prevIndex === -1) return;
 
@@ -153,7 +176,10 @@ function App() {
     const index = requests.findIndex(r => r.id === id);
     let nextIndex = -1;
     for (let i = index + 1; i < requests.length; i++) {
-      if (requests[i].is_priority === requests[index].is_priority) { nextIndex = i; break; }
+      if (requests[i].is_priority === requests[index].is_priority && requests[i].status === requests[index].status) { 
+        nextIndex = i; 
+        break; 
+      }
     }
     if (nextIndex === -1) return;
 
@@ -188,11 +214,9 @@ function App() {
   });
 
   const totalPages = Math.ceil(filteredRequests.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  // Ini data yang siap dirender di halaman yang sedang aktif
+  const startIndex = (currentPage - 1) * itemsPerPage; // Perbaikan sintaks currentPage - 1
   const currentItems = filteredRequests.slice(startIndex, startIndex + itemsPerPage);
 
-  // Jika data difilter/dihapus dan halamannya kosong, paksa mundur 1 halaman
   useEffect(() => {
     if (currentPage > totalPages && totalPages > 0) setCurrentPage(totalPages);
   }, [filteredRequests.length, currentPage, totalPages]);
@@ -266,7 +290,7 @@ function App() {
         </form>
       )}
 
-      {/* FITUR BARU: PANEL PENCARIAN & FILTER */}
+      {/* PANEL PENCARIAN & FILTER */}
       <div className="filter-panel">
       <input 
           placeholder="🔍 Cari nama atau deskripsi..." 
@@ -315,12 +339,12 @@ function App() {
               </thead>
               <tbody>
                 {currentItems.length > 0 ? currentItems.map((req, i) => {
-                  // Hitung penomoran asli berdasarkan halaman
                   const globalNumbering = startIndex + i + 1;
-                  // Cari index aslinya di array `requests` utama untuk logika disabled tombol
                   const realIndex = requests.findIndex(r => r.id === req.id);
-                  const isFirstInGroup = realIndex === 0 || requests[realIndex - 1].is_priority !== req.is_priority;
-                  const isLastInGroup = realIndex === requests.length - 1 || requests[realIndex + 1].is_priority !== req.is_priority;
+                  
+                  // Disable tombol naik turun jika prioritas ATAU status-nya berbeda dengan data di atas/bawahnya
+                  const isFirstInGroup = realIndex === 0 || requests[realIndex - 1].is_priority !== req.is_priority || requests[realIndex - 1].status !== req.status;
+                  const isLastInGroup = realIndex === requests.length - 1 || requests[realIndex + 1].is_priority !== req.is_priority || requests[realIndex + 1].status !== req.status;
 
                   return (
                     <tr key={req.id} className={req.is_priority ? 'row-priority' : ''}>
@@ -359,13 +383,12 @@ function App() {
             </table>
           </div>
 
-          {/* FITUR BARU: KONTROL PAGINATION */}
           {totalPages > 1 && (
             <div className="pagination">
               <button 
                 className="btn-page" 
                 disabled={currentPage === 1} 
-                onClick={() => setCurrentPage(currentPage - 1)}
+                onClick={() => setCurrentPage(currentPage - 1)} // Perbaikan sintaks currentPage - 1
               >
                 &laquo; Prev
               </button>
