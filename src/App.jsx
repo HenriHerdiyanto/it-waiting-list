@@ -19,6 +19,7 @@ import {
   ITEMS_PER_PAGE_OPTIONS,
   STATUS,
   TAB_ACTIVE,
+  TAB_BY_STATUS,
   TAB_DONE,
 } from './constants';
 import {
@@ -100,7 +101,7 @@ export default function App() {
   };
 
   const resetForm = () => {
-    setForm(EMPTY_FORM);
+    setForm({ ...EMPTY_FORM, divisi: [] });
     setEditId(null);
   };
 
@@ -145,7 +146,7 @@ export default function App() {
       return;
     }
 
-    const targetTab = form.status === STATUS.DONE ? TAB_DONE : TAB_ACTIVE;
+    const targetTab = TAB_BY_STATUS[form.status] ?? TAB_ACTIVE;
     setSaving(true);
 
     try {
@@ -198,7 +199,7 @@ export default function App() {
   const handleEditClick = (req) => {
     setForm({
       nama_orang_req: req.nama_orang_req,
-      divisi: req.divisi,
+      divisi: [...req.divisi],
       deskripsi: req.deskripsi,
       PIC: req.PIC,
       status: req.status,
@@ -390,7 +391,10 @@ export default function App() {
   };
 
   const counts = {
-    active: requests.filter((item) => item.status !== STATUS.DONE).length,
+    active: requests.filter(
+      (item) => item.status === STATUS.ON_PROGRESS || item.status === STATUS.WAITING,
+    ).length,
+    pending: requests.filter((item) => item.status === STATUS.PENDING).length,
     done: requests.filter((item) => item.status === STATUS.DONE).length,
   };
 
@@ -409,7 +413,7 @@ export default function App() {
 
   const totalPages = Math.max(1, Math.ceil(visibleRequests.length / itemsPerPage));
   const safePage = Math.min(currentPage, totalPages);
-  const canReorder = !filtering && activeTab === TAB_ACTIVE;
+  const canReorder = !filtering && activeTab !== TAB_DONE;
 
   return (
     <div className="container">

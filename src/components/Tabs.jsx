@@ -1,8 +1,9 @@
-import { TAB_ACTIVE, TAB_DONE } from '../constants';
+import { TAB_ACTIVE, TAB_DONE, TAB_PENDING } from '../constants';
 
 export default function Tabs({ activeTab, counts, onChange }) {
   const tabs = [
-    { id: TAB_ACTIVE, label: 'Aktif', count: counts.active, hint: 'Waiting & On Proses' },
+    { id: TAB_ACTIVE, label: 'Aktif', count: counts.active, hint: 'On Proses & Waiting' },
+    { id: TAB_PENDING, label: 'Pending', count: counts.pending, hint: 'Menunggu tindak lanjut' },
     { id: TAB_DONE, label: 'Selesai', count: counts.done, hint: 'Arsip request' },
   ];
 

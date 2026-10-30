@@ -1,4 +1,5 @@
-import { DIVISI_OPTIONS, STATUS_OPTIONS } from '../constants';
+import { STATUS_OPTIONS } from '../constants';
+import DivisiPicker from './DivisiPicker';
 
 export default function RequestForm({ form, editing, saving, onChange, onSubmit, onCancel }) {
   return (
@@ -18,16 +19,27 @@ export default function RequestForm({ form, editing, saving, onChange, onSubmit,
         </label>
 
         <label className="field">
-          <span>Divisi</span>
-          <select value={form.divisi} onChange={(event) => onChange('divisi', event.target.value)}>
-            <option value="">Pilih Divisi</option>
-            {DIVISI_OPTIONS.map((divisi) => (
-              <option key={divisi} value={divisi}>
-                {divisi}
+          <span>Status</span>
+          <select value={form.status} onChange={(event) => onChange('status', event.target.value)}>
+            {STATUS_OPTIONS.map((status) => (
+              <option key={status} value={status}>
+                {status}
               </option>
             ))}
           </select>
         </label>
+      </div>
+
+      <div className="field">
+        <span>Divisi</span>
+        <DivisiPicker
+          value={form.divisi}
+          disabled={saving}
+          onChange={(value) => onChange('divisi', value)}
+        />
+        <small className="hint">
+          Bisa pilih lebih dari satu divisi. Kosongkan jika tidak ada (tampil sebagai Management).
+        </small>
       </div>
 
       <label className="field">
@@ -41,28 +53,15 @@ export default function RequestForm({ form, editing, saving, onChange, onSubmit,
         />
       </label>
 
-      <div className="form-grid">
-        <label className="field">
-          <span>PIC</span>
-          <input
-            type="text"
-            placeholder="Nama PIC (opsional)"
-            value={form.PIC}
-            onChange={(event) => onChange('PIC', event.target.value)}
-          />
-        </label>
-
-        <label className="field">
-          <span>Status</span>
-          <select value={form.status} onChange={(event) => onChange('status', event.target.value)}>
-            {STATUS_OPTIONS.map((status) => (
-              <option key={status} value={status}>
-                {status}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
+      <label className="field">
+        <span>PIC</span>
+        <input
+          type="text"
+          placeholder="Nama PIC (opsional)"
+          value={form.PIC}
+          onChange={(event) => onChange('PIC', event.target.value)}
+        />
+      </label>
 
       <label className="checkbox-row">
         <input

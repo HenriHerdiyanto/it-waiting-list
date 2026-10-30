@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { STATUS, TAB_DONE } from '../constants';
+import { STATUS, TAB_DONE, TAB_PENDING } from '../constants';
 import { formatDateTime } from '../utils/format';
 
 const STATUS_CLASS = {
   [STATUS.WAITING]: 'status-waiting',
   [STATUS.ON_PROGRESS]: 'status-proses',
+  [STATUS.PENDING]: 'status-pending',
   [STATUS.DONE]: 'status-done',
 };
 
@@ -32,8 +33,15 @@ export default function RequestTable({
   const start = (page - 1) * itemsPerPage;
   const pageItems = items.slice(start, start + itemsPerPage);
   const isDoneTab = tab === TAB_DONE;
+  const isPendingTab = tab === TAB_PENDING;
   const columnCount = 5 + (isDoneTab ? 1 : 0) + (isLoggedIn ? 1 : 0);
   const dragEnabled = isLoggedIn && canReorder && !isDoneTab && !busy;
+
+  const emptyMessage = isDoneTab
+    ? 'Belum ada request yang selesai.'
+    : isPendingTab
+      ? 'Belum ada request yang pending.'
+      : 'Tidak ada request yang cocok dengan filter.';
 
   const reorderHint = canReorder
     ? 'Sudah di batas grup prioritas/status yang sama'
@@ -98,9 +106,7 @@ export default function RequestTable({
             {pageItems.length === 0 && (
               <tr>
                 <td colSpan={columnCount} className="empty-cell">
-                  {isDoneTab
-                    ? 'Belum ada request yang selesai.'
-                    : 'Tidak ada request yang cocok dengan filter.'}
+                  {emptyMessage}
                 </td>
               </tr>
             )}
@@ -154,7 +160,9 @@ export default function RequestTable({
                       )}
                       <div>
                         <strong>{req.nama_orang_req || '-'}</strong>
-                        <span>{req.divisi || 'Management'}</span>
+                        <span title={req.divisi.join(', ')}>
+                          {req.divisi.length > 0 ? req.divisi.join(', ') : 'Management'}
+                        </span>
                       </div>
                     </div>
                   </td>

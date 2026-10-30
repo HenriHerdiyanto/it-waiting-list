@@ -4,25 +4,40 @@ Aplikasi web untuk mencatat, memantau, dan mengurutkan request/perbaikan IT dari
 
 ## Fitur
 
-- **Tab Aktif & Selesai** — request `Waiting`/`On Proses` dipisah dari arsip `Done` agar daftar aktif tetap fokus.
-- **Urutan manual** — tombol 🔼 Naik / 🔽 Turun untuk menggeser request, tersimpan permanen ke API.
+- **Tab Aktif, Pending & Selesai** — `On Proses`/`Waiting` di tab Aktif, `Pending` di tab sendiri, dan `Done` diarsipkan di tab Selesai.
+- **Urutan manual** — tombol 🔼 Naik / 🔽 Turun dan drag & drop untuk menggeser request, tersimpan permanen ke API.
 - **Prioritas VIP** — request VIP selalu tampil paling atas.
-- **Pencarian & filter** — cari nama/deskripsi/PIC, filter divisi dan status.
+- **Multi-divisi** — satu request bisa berasal dari beberapa divisi sekaligus (pilih lewat chip).
+- **Pencarian & filter** — cari nama/deskripsi/PIC/divisi, filter divisi dan status.
 - **Pagination** — pilih 10/25/50 baris per halaman.
 - **Export CSV** — unduh data sesuai tab dan filter yang sedang aktif.
 - **Panel admin** — tambah, edit, hapus, ubah prioritas, dan buka kembali request yang sudah selesai.
 - **Notifikasi toast, loading skeleton, dan error state** dengan tombol coba lagi.
+
+## Status & Tab
+
+| Tab | Status yang tampil |
+| --- | --- |
+| Aktif | `On Proses`, `Waiting` |
+| Pending | `Pending` |
+| Selesai | `Done` (arsip) |
+
+Request `Pending` **tidak** muncul di tab Aktif. Tab Selesai satu-satunya yang menampilkan kolom tanggal selesai dan tombol **Buka Kembali** (mengembalikan request ke `Waiting`).
 
 ## Aturan Urutan
 
 Urutan daftar ditentukan berlapis:
 
 1. **VIP** selalu di atas.
-2. **Status**: `On Proses` → `Waiting` → `Done`.
+2. **Status**: `On Proses` → `Waiting` → `Pending` → `Done`.
 3. **Urutan manual** (`urutan`, unik 1..N).
 4. `createdAt` lalu `id` sebagai tie-breaker agar urutan selalu stabil.
 
-Tombol Naik/Turun hanya menggeser request **di dalam grup prioritas + status yang sama**. Saat pencarian/filter aktif, tombol dinonaktifkan agar hasil filter tidak membingungkan. Saat data dimuat, `urutan` yang duplikat/hilang otomatis dinormalisasi dan disimpan ulang.
+Tombol Naik/Turun dan drag & drop hanya menggeser request **di dalam grup prioritas + status yang sama**. Saat pencarian/filter aktif, pengurutan dinonaktifkan agar hasil filter tidak membingungkan. Saat data dimuat, `urutan` yang duplikat/hilang otomatis dinormalisasi dan disimpan ulang.
+
+## Data Divisi
+
+`divisi` disimpan sebagai array, misalnya `["Aoshi", "FMI"]`. Data lama yang masih berupa string (`"Aoshi"` atau `"Aoshi, FMI"`) otomatis dimigrasikan sekali saat aplikasi dimuat. Divisi kosong ditampilkan sebagai **Management**.
 
 ## Menjalankan
 
@@ -81,6 +96,7 @@ src/
 │  ├─ Header.jsx
 │  ├─ LoginForm.jsx
 │  ├─ RequestForm.jsx
+│  ├─ DivisiPicker.jsx
 │  ├─ Tabs.jsx
 │  ├─ FilterPanel.jsx
 │  ├─ RequestTable.jsx

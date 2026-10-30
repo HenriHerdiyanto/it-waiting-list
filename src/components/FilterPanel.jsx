@@ -1,4 +1,4 @@
-import { DIVISI_OPTIONS, STATUS, TAB_DONE } from '../constants';
+import { DIVISI_OPTIONS, STATUS, TAB_ACTIVE } from '../constants';
 
 export default function FilterPanel({
   tab,
@@ -33,7 +33,7 @@ export default function FilterPanel({
           ))}
         </select>
 
-        {tab !== TAB_DONE && (
+        {tab === TAB_ACTIVE && (
           <select value={status} onChange={(event) => onStatusChange(event.target.value)}>
             <option value="Semua">Semua Status</option>
             <option value={STATUS.ON_PROGRESS}>{STATUS.ON_PROGRESS}</option>

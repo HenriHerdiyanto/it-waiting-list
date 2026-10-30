@@ -1,4 +1,4 @@
-import { STATUS, STATUS_WEIGHT, TAB_DONE } from '../constants';
+import { STATUS, STATUS_WEIGHT, TAB_ACTIVE, TAB_DONE, TAB_PENDING } from '../constants';
 
 const NO_ORDER = Number.MAX_SAFE_INTEGER;
 
@@ -12,7 +12,7 @@ function compareIds(a, b) {
 /**
  * Aturan urut final:
  * 1. VIP selalu di atas
- * 2. Status: On Proses -> Waiting -> Done
+ * 2. Status: On Proses -> Waiting -> Pending -> Done
  * 3. urutan manual (unik 1..N)
  * 4. createdAt lalu id sebagai tie-breaker agar selalu stabil
  */
@@ -41,10 +41,26 @@ export function sortRequests(list) {
 export function normalizeStatus(value) {
   const status = String(value ?? '').trim().toLowerCase();
   if (['done', 'selesai', 'complete', 'completed'].includes(status)) return STATUS.DONE;
+  if (['pending', 'tertunda', 'ditunda'].includes(status)) return STATUS.PENDING;
   if (['on proses', 'on process', 'proses', 'in progress', 'progress'].includes(status)) {
     return STATUS.ON_PROGRESS;
   }
   return STATUS.WAITING;
+}
+
+/**
+ * Menyeragamkan divisi menjadi array bersih tanpa duplikat.
+ * Mendukung data lama berupa string tunggal maupun "Aoshi, FMI".
+ */
+export function normalizeDivisi(value) {
+  const parts = Array.isArray(value) ? value : String(value ?? '').split(/[,;]/);
+  const cleaned = parts.map((item) => String(item ?? '').trim()).filter(Boolean);
+  return [...new Set(cleaned)];
+}
+
+function sameDivisi(a, b) {
+  if (!Array.isArray(a) || a.length !== b.length) return false;
+  return a.every((value, index) => value === b[index]);
 }
 
 export function normalizeRequest(item = {}, index = 0) {
@@ -58,7 +74,7 @@ export function normalizeRequest(item = {}, index = 0) {
     ...item,
     id: item.id ?? `local-${index}`,
     nama_orang_req: String(item.nama_orang_req ?? '').trim(),
-    divisi: String(item.divisi ?? '').trim(),
+    divisi: normalizeDivisi(item.divisi),
     deskripsi: String(item.deskripsi ?? ''),
     PIC: String(item.PIC ?? '').trim(),
     status,
@@ -85,7 +101,8 @@ export function diffOrder(previous, next) {
 
 /**
  * Normalisasi data dari API sekaligus menyembuhkan urutan duplikat/hilang.
- * `changed` berisi item yang perlu di-PUT agar urutan tersimpan permanen.
+ * `changed` berisi item yang perlu di-PUT agar urutan tersimpan permanen,
+ * termasuk migrasi satu kali divisi lama (string) menjadi array.
  */
 export function prepareRequests(raw) {
   const normalized = raw.map((item, index) => normalizeRequest(item, index));
@@ -101,8 +118,15 @@ export function prepareRequests(raw) {
         ? null
         : Number(original.urutan);
     const originalDoneAt = original.doneAt ?? null;
+    const divisiChanged =
+      !Array.isArray(original.divisi) ||
+      !sameDivisi(normalizeDivisi(original.divisi), item.divisi);
 
-    return originalOrder !== item.urutan || originalDoneAt !== (item.doneAt ?? null);
+    return (
+      originalOrder !== item.urutan ||
+      originalDoneAt !== (item.doneAt ?? null) ||
+      divisiChanged
+    );
   });
 
   return { ordered, changed };
@@ -172,21 +196,27 @@ export function buildMoveTo(list, sourceId, targetId) {
   };
 }
 
+/** Status yang ditampilkan pada masing-masing tab. */
+function belongsToTab(item, tab) {
+  if (tab === TAB_DONE) return item.status === STATUS.DONE;
+  if (tab === TAB_PENDING) return item.status === STATUS.PENDING;
+  return item.status === STATUS.ON_PROGRESS || item.status === STATUS.WAITING;
+}
+
 /** Filter berdasarkan tab, pencarian, divisi, dan status. */
 export function filterRequests(list, { tab, search = '', divisi = 'Semua', status = 'Semua' }) {
   const term = String(search ?? '').trim().toLowerCase();
 
   return list.filter((item) => {
-    const inTab = tab === TAB_DONE ? item.status === STATUS.DONE : item.status !== STATUS.DONE;
-    if (!inTab) return false;
+    if (!belongsToTab(item, tab)) return false;
 
-    if (divisi !== 'Semua' && item.divisi !== divisi) return false;
+    if (divisi !== 'Semua' && !item.divisi.includes(divisi)) return false;
 
-    if (tab !== TAB_DONE && status !== 'Semua' && item.status !== status) return false;
+    if (tab === TAB_ACTIVE && status !== 'Semua' && item.status !== status) return false;
 
     if (!term) return true;
 
-    return [item.nama_orang_req, item.deskripsi, item.PIC, item.divisi].some((value) =>
+    return [item.nama_orang_req, item.deskripsi, item.PIC, ...item.divisi].some((value) =>
       String(value ?? '').toLowerCase().includes(term),
     );
   });

@@ -18,7 +18,7 @@ export function requestsToCsv(items, offset = 0) {
   const rows = items.map((item, index) => [
     offset + index + 1,
     item.nama_orang_req,
-    item.divisi || 'Management',
+    item.divisi.length > 0 ? item.divisi.join('; ') : 'Management',
     item.deskripsi,
     item.PIC,
     item.status,
