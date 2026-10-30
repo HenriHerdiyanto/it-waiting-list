@@ -218,8 +218,8 @@ function App() {
       {!isLoggedIn && showLoginForm && (
         <form onSubmit={handleLogin} className="card-form">
           <h3>Login Admin</h3>
-          <input type="text" placeholder="Username (admin)" required value={loginForm.username} onChange={(e) => setLoginForm({...loginForm, username: e.target.value})} />
-          <input type="password" placeholder="Password (admin123)" required value={loginForm.password} onChange={(e) => setLoginForm({...loginForm, password: e.target.value})} />
+          <input type="text" required value={loginForm.username} onChange={(e) => setLoginForm({...loginForm, username: e.target.value})} />
+          <input type="password" required value={loginForm.password} onChange={(e) => setLoginForm({...loginForm, password: e.target.value})} />
           <button type="submit" className="btn btn-primary">Masuk</button>
         </form>
       )}
@@ -280,6 +280,7 @@ function App() {
 
         <div className="filter-dropdowns">
           <select value={filterDivisi} onChange={(e) => { setFilterDivisi(e.target.value); setCurrentPage(1); }}>
+              <option value="Semua">Semua</option>
               <option value="Rapspoint">Rapspoint</option>
               <option value="Vender">Vender</option>
               <option value="Barapoint">Barapoint</option>
