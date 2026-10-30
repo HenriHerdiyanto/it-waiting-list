@@ -1,413 +1,521 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import './App.css';
 
-function App() {
+import Header from './components/Header';
+import LoginForm from './components/LoginForm';
+import RequestForm from './components/RequestForm';
+import Tabs from './components/Tabs';
+import FilterPanel from './components/FilterPanel';
+import RequestTable from './components/RequestTable';
+import Pagination from './components/Pagination';
+import ToastContainer from './components/ToastContainer';
+import ConfirmDialog from './components/ConfirmDialog';
+import { ErrorState, LoadingState } from './components/Feedback';
+
+import { useToast } from './hooks/useToast';
+import { ADMIN_PASS, ADMIN_USER } from './config';
+import {
+  EMPTY_FORM,
+  ITEMS_PER_PAGE_OPTIONS,
+  STATUS,
+  TAB_ACTIVE,
+  TAB_DONE,
+} from './constants';
+import {
+  createRequest,
+  deleteRequest,
+  fetchRequests,
+  saveOrderChanges,
+  updateRequest,
+} from './api';
+import {
+  buildMove,
+  buildMoveTo,
+  getVisibleRequests,
+  isFilterActive,
+  normalizeRequest,
+  prepareRequests,
+  reindexRequests,
+  sortRequests,
+} from './utils/order';
+import { downloadCsv, requestsToCsv, todayStamp } from './utils/format';
+
+const AUTH_KEY = 'isAuth';
+
+export default function App() {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
-  
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [loadError, setLoadError] = useState('');
+
+  const [isLoggedIn, setIsLoggedIn] = useState(() => localStorage.getItem(AUTH_KEY) === 'true');
   const [showLoginForm, setShowLoginForm] = useState(false);
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
 
-  const [newReq, setNewReq] = useState({
-    nama_orang_req: '', divisi: '', deskripsi: '', PIC: '', status: 'Waiting', urutan: 0, is_priority: false
-  });
-  
+  const [form, setForm] = useState(EMPTY_FORM);
   const [editId, setEditId] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [busyId, setBusyId] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
-  // --- STATE UNTUK FILTER & PAGINATION ---
+  const [activeTab, setActiveTab] = useState(TAB_ACTIVE);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterDivisi, setFilterDivisi] = useState('Semua');
   const [filterStatus, setFilterStatus] = useState('Semua');
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10; // Tampilkan 5 baris per halaman
+  const [itemsPerPage, setItemsPerPage] = useState(ITEMS_PER_PAGE_OPTIONS[0]);
 
-  const API_URL = 'https://6ae305fe933120ae20f80e32.mockapi.io/requests';
+  const { toasts, notify, dismiss } = useToast();
+
+  const loadData = useCallback(async () => {
+    try {
+      const raw = await fetchRequests();
+      const { ordered, changed } = prepareRequests(Array.isArray(raw) ? raw : []);
+      setRequests(ordered);
+
+      // Sembuhkan urutan yang duplikat/hilang sekali saja, lalu simpan permanen.
+      if (changed.length > 0) {
+        try {
+          await saveOrderChanges(changed);
+        } catch (error) {
+          notify(`Data termuat, tetapi gagal menyimpan pembaruan urutan: ${error.message}`, 'warning');
+        }
+      }
+    } catch (error) {
+      setLoadError(error.message || 'Gagal memuat data request.');
+    } finally {
+      setLoading(false);
+    }
+  }, [notify]);
 
   useEffect(() => {
-    const authStatus = localStorage.getItem('isAuth');
-    if (authStatus === 'true') {
-      setIsLoggedIn(true);
-    }
-    fetchData();
-  }, []);
+    // Memuat data adalah sinkronisasi dengan API eksternal; setState terjadi setelah await.
+    // oxlint-disable-next-line react/set-state-in-effect
+    loadData();
+  }, [loadData]);
 
-  // --- FUNGSI SORTING BARU ---
-  const sortData = (data) => {
-    // Buat bobot untuk status agar mudah diurutkan
-    const statusWeight = {
-      'On Proses': 1,
-      'Waiting': 2,
-      'Done': 3
-    };
-
-    return [...data].sort((a, b) => {
-      // 1. Cek Prioritas (VIP selalu di atas)
-      if (a.is_priority !== b.is_priority) {
-        return a.is_priority ? -1 : 1; 
-      }
-
-      // 2. Jika sama-sama prioritas atau tidak prioritas, cek Status
-      const weightA = statusWeight[a.status] || 99; // 99 sebagai fallback jika status tidak dikenali
-      const weightB = statusWeight[b.status] || 99;
-      
-      if (weightA !== weightB) {
-        return weightA - weightB;
-      }
-
-      // 3. Jika statusnya juga sama, urutkan berdasarkan 'urutan'
-      return a.urutan - b.urutan;
-    });
+  const retryLoad = () => {
+    setLoadError('');
+    setLoading(true);
+    loadData();
   };
 
-  const fetchData = () => {
-    fetch(API_URL)
-      .then((response) => response.json())
-      .then((data) => {
-        const normalizedData = data.map((item, index) => ({
-          ...item,
-          urutan: item.urutan !== undefined ? item.urutan : (index + 1),
-          is_priority: item.is_priority || false
-        }));
-        setRequests(sortData(normalizedData));
-        setLoading(false);
-      })
-      .catch((error) => console.error('Error fetching data:', error));
+  const resetForm = () => {
+    setForm(EMPTY_FORM);
+    setEditId(null);
   };
 
-  const handleLogin = (e) => {
-    e.preventDefault();
-    if (loginForm.username === 'admin' && loginForm.password === 'admin123') {
+  const handleLogin = (event) => {
+    event.preventDefault();
+
+    if (loginForm.username === ADMIN_USER && loginForm.password === ADMIN_PASS) {
       setIsLoggedIn(true);
-      localStorage.setItem('isAuth', 'true');
+      localStorage.setItem(AUTH_KEY, 'true');
       setShowLoginForm(false);
       setLoginForm({ username: '', password: '' });
+      notify('Berhasil login sebagai admin.');
     } else {
-      alert('Username atau password salah!');
+      notify('Username atau password salah.', 'error');
     }
   };
 
   const handleLogout = () => {
     setIsLoggedIn(false);
-    localStorage.removeItem('isAuth');
-    setEditId(null);
+    localStorage.removeItem(AUTH_KEY);
+    setShowLoginForm(false);
+    setDeleteTarget(null);
     resetForm();
+    notify('Anda telah logout.', 'info');
   };
 
-  const resetForm = () => {
-    setNewReq({ nama_orang_req: '', divisi: '', deskripsi: '', PIC: '', status: 'Waiting', urutan: 0, is_priority: false });
-    setEditId(null);
+  const handleToggleLogin = () => {
+    setShowLoginForm((previous) => !previous);
+    setLoginForm({ username: '', password: '' });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (editId) {
-      fetch(`${API_URL}/${editId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newReq),
-      })
-        .then((response) => response.json())
-        .then((updatedData) => {
-          setRequests(sortData(requests.map(req => req.id === editId ? updatedData : req)));
-          resetForm();
-          alert('Request diperbarui!');
-        });
-    } else {
-      let maxUrutan = requests.length > 0 ? Math.max(...requests.map(r => r.urutan)) : 0;
-      const payload = { ...newReq, urutan: maxUrutan + 1 };
-      fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          setRequests(sortData([...requests, data]));
-          resetForm();
-          alert('Request ditambahkan!');
-        });
+  const handleFormChange = (field, value) => {
+    setForm((previous) => ({ ...previous, [field]: value }));
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    if (saving) return;
+
+    if (!form.nama_orang_req.trim() || !form.deskripsi.trim()) {
+      notify('Nama requester dan deskripsi wajib diisi.', 'error');
+      return;
     }
-  };
 
-  const handleDelete = (id) => {
-    if (window.confirm('Yakin ingin menghapus?')) {
-      fetch(`${API_URL}/${id}`, { method: 'DELETE' })
-        .then(() => setRequests(requests.filter(req => req.id !== id)));
+    const targetTab = form.status === STATUS.DONE ? TAB_DONE : TAB_ACTIVE;
+    setSaving(true);
+
+    try {
+      if (editId) {
+        const existing = requests.find((item) => String(item.id) === String(editId));
+        if (!existing) throw new Error('Request yang ingin diedit tidak ditemukan.');
+
+        const existingDoneAt = existing.status === STATUS.DONE ? existing.doneAt : null;
+        const doneAt =
+          form.status === STATUS.DONE ? existingDoneAt || new Date().toISOString() : null;
+
+        const payload = { ...existing, ...form, doneAt };
+        const saved = normalizeRequest(await updateRequest(editId, payload), 0);
+
+        setRequests((previous) =>
+          sortRequests(
+            previous.map((item) =>
+              String(item.id) === String(editId) ? { ...saved, urutan: existing.urutan } : item,
+            ),
+          ),
+        );
+        notify('Request berhasil diperbarui.');
+      } else {
+        const maxUrutan = requests.reduce(
+          (max, item) => Math.max(max, Number(item.urutan) || 0),
+          0,
+        );
+        const payload = {
+          ...form,
+          urutan: maxUrutan + 1,
+          doneAt: form.status === STATUS.DONE ? new Date().toISOString() : null,
+        };
+        const created = normalizeRequest(await createRequest(payload), 0);
+
+        setRequests((previous) => sortRequests([...previous, created]));
+        notify('Request baru berhasil ditambahkan.');
+      }
+
+      resetForm();
+      setActiveTab(targetTab);
+      setFilterStatus('Semua');
+      setCurrentPage(1);
+    } catch (error) {
+      notify(error.message || 'Gagal menyimpan request.', 'error');
+    } finally {
+      setSaving(false);
     }
   };
 
   const handleEditClick = (req) => {
-    setNewReq({ ...req });
+    setForm({
+      nama_orang_req: req.nama_orang_req,
+      divisi: req.divisi,
+      deskripsi: req.deskripsi,
+      PIC: req.PIC,
+      status: req.status,
+      is_priority: req.is_priority,
+    });
     setEditId(req.id);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const togglePriority = (req) => {
-    const updatedItem = { ...req, is_priority: !req.is_priority };
-    setRequests(sortData(requests.map(r => r.id === req.id ? updatedItem : r)));
-    fetch(`${API_URL}/${req.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updatedItem) });
-  };
+  const confirmDelete = async () => {
+    const target = deleteTarget;
+    if (!target) return;
 
-  const handleMoveUp = (id) => {
-    const index = requests.findIndex(r => r.id === id);
-    let prevIndex = -1;
-    for (let i = index - 1; i >= 0; i--) { // Perbaikan sintaks index - 1
-      if (requests[i].is_priority === requests[index].is_priority && requests[i].status === requests[index].status) { 
-        prevIndex = i; 
-        break; 
+    setBusyId(target.id);
+
+    try {
+      await deleteRequest(target.id);
+
+      const remaining = requests.filter((item) => String(item.id) !== String(target.id));
+      const { ordered, changed } = reindexRequests(remaining);
+      setRequests(ordered);
+
+      if (changed.length > 0) {
+        try {
+          await saveOrderChanges(changed);
+        } catch {
+          // Urutan di UI tetap rapi; akan diselaraskan lagi saat data dimuat ulang.
+        }
       }
-    }
-    if (prevIndex === -1) return;
 
-    const newRequests = [...requests];
-    const tempUrutan = newRequests[index].urutan;
-    newRequests[index].urutan = newRequests[prevIndex].urutan;
-    newRequests[prevIndex].urutan = tempUrutan;
-
-    setRequests(sortData(newRequests));
-    Promise.all([
-      fetch(`${API_URL}/${newRequests[index].id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newRequests[index]) }),
-      fetch(`${API_URL}/${newRequests[prevIndex].id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newRequests[prevIndex]) })
-    ]);
-  };
-
-  const handleMoveDown = (id) => {
-    const index = requests.findIndex(r => r.id === id);
-    let nextIndex = -1;
-    for (let i = index + 1; i < requests.length; i++) {
-      if (requests[i].is_priority === requests[index].is_priority && requests[i].status === requests[index].status) { 
-        nextIndex = i; 
-        break; 
-      }
-    }
-    if (nextIndex === -1) return;
-
-    const newRequests = [...requests];
-    const tempUrutan = newRequests[index].urutan;
-    newRequests[index].urutan = newRequests[nextIndex].urutan;
-    newRequests[nextIndex].urutan = tempUrutan;
-
-    setRequests(sortData(newRequests));
-    Promise.all([
-      fetch(`${API_URL}/${newRequests[index].id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newRequests[index]) }),
-      fetch(`${API_URL}/${newRequests[nextIndex].id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newRequests[nextIndex]) })
-    ]);
-  };
-
-  const getStatusColor = (status) => {
-    switch (status.toLowerCase()) {
-      case 'waiting': return 'status-waiting';
-      case 'on proses': return 'status-proses';
-      case 'done': return 'status-done';
-      default: return '';
+      if (String(editId) === String(target.id)) resetForm();
+      setDeleteTarget(null);
+      notify('Request berhasil dihapus.');
+    } catch (error) {
+      notify(error.message || 'Gagal menghapus request.', 'error');
+    } finally {
+      setBusyId(null);
     }
   };
 
-  // --- LOGIKA FILTER & PAGINATION EKSEKUSI ---
-  const filteredRequests = requests.filter((req) => {
-    const matchSearch = req.nama_orang_req.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                        req.deskripsi.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchDivisi = filterDivisi === 'Semua' || req.divisi === filterDivisi;
-    const matchStatus = filterStatus === 'Semua' || req.status === filterStatus;
-    return matchSearch && matchDivisi && matchStatus;
+  const handleTogglePriority = async (req) => {
+    const previous = requests;
+    const nextPriority = !req.is_priority;
+    setBusyId(req.id);
+
+    setRequests(
+      sortRequests(
+        previous.map((item) =>
+          String(item.id) === String(req.id) ? { ...item, is_priority: nextPriority } : item,
+        ),
+      ),
+    );
+
+    try {
+      const saved = normalizeRequest(
+        await updateRequest(req.id, { ...req, is_priority: nextPriority }),
+        0,
+      );
+
+      setRequests((current) =>
+        sortRequests(
+          current.map((item) =>
+            String(item.id) === String(req.id) ? { ...saved, urutan: req.urutan } : item,
+          ),
+        ),
+      );
+
+      notify(
+        nextPriority ? 'Request ditandai sebagai VIP.' : 'Status VIP request dihapus.',
+        'info',
+      );
+    } catch (error) {
+      setRequests(previous);
+      notify(error.message || 'Gagal mengubah prioritas.', 'error');
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const applyOrderChange = async (result) => {
+    const previous = requests;
+    const previousPage = currentPage;
+    setBusyId(result.movedId);
+    setRequests(result.ordered);
+
+    // Ikuti baris yang dipindah ke halaman barunya.
+    const visible = getVisibleRequests(result.ordered, {
+      tab: activeTab,
+      search: searchQuery,
+      divisi: filterDivisi,
+      status: filterStatus,
+    });
+    const visibleIndex = visible.findIndex(
+      (item) => String(item.id) === String(result.movedId),
+    );
+    if (visibleIndex >= 0) {
+      setCurrentPage(Math.floor(visibleIndex / itemsPerPage) + 1);
+    }
+
+    try {
+      await saveOrderChanges(result.changed);
+    } catch (error) {
+      setRequests(previous);
+      setCurrentPage(previousPage);
+      notify(error.message || 'Gagal menyimpan urutan.', 'error');
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const handleMove = (id, direction) => {
+    if (busyId) return;
+
+    const result = buildMove(requests, id, direction);
+    if (!result) {
+      notify('Tidak bisa dipindah karena sudah di batas grup prioritas/status.', 'warning');
+      return;
+    }
+
+    applyOrderChange(result);
+  };
+
+  const handleMoveTo = (sourceId, targetId) => {
+    if (busyId || String(sourceId) === String(targetId)) return;
+
+    const result = buildMoveTo(requests, sourceId, targetId);
+    if (!result) {
+      notify('Tidak bisa memindah lintas grup prioritas/status.', 'warning');
+      return;
+    }
+
+    applyOrderChange(result);
+  };
+
+  const handleReopen = async (req) => {
+    const previous = requests;
+    setBusyId(req.id);
+
+    try {
+      const saved = normalizeRequest(
+        await updateRequest(req.id, { ...req, status: STATUS.WAITING, doneAt: null }),
+        0,
+      );
+
+      setRequests((current) =>
+        sortRequests(
+          current.map((item) =>
+            String(item.id) === String(req.id) ? { ...saved, urutan: req.urutan } : item,
+          ),
+        ),
+      );
+
+      setActiveTab(TAB_ACTIVE);
+      setFilterStatus('Semua');
+      setCurrentPage(1);
+      notify('Request dibuka kembali dan masuk ke daftar aktif.');
+    } catch (error) {
+      setRequests(previous);
+      notify(error.message || 'Gagal membuka kembali request.', 'error');
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    setFilterStatus('Semua');
+    setCurrentPage(1);
+  };
+
+  const resetFilters = () => {
+    setSearchQuery('');
+    setFilterDivisi('Semua');
+    setFilterStatus('Semua');
+    setCurrentPage(1);
+  };
+
+  const handleExport = () => {
+    if (visibleRequests.length === 0) {
+      notify('Tidak ada data untuk diexport.', 'warning');
+      return;
+    }
+
+    downloadCsv(
+      `it-request-${activeTab}-${todayStamp()}.csv`,
+      requestsToCsv(visibleRequests),
+    );
+    notify('File CSV berhasil diunduh.');
+  };
+
+  const counts = {
+    active: requests.filter((item) => item.status !== STATUS.DONE).length,
+    done: requests.filter((item) => item.status === STATUS.DONE).length,
+  };
+
+  const visibleRequests = getVisibleRequests(requests, {
+    tab: activeTab,
+    search: searchQuery,
+    divisi: filterDivisi,
+    status: filterStatus,
   });
 
-  const totalPages = Math.ceil(filteredRequests.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage; // Perbaikan sintaks currentPage - 1
-  const currentItems = filteredRequests.slice(startIndex, startIndex + itemsPerPage);
+  const filtering = isFilterActive({
+    search: searchQuery,
+    divisi: filterDivisi,
+    status: filterStatus,
+  });
 
-  useEffect(() => {
-    if (currentPage > totalPages && totalPages > 0) setCurrentPage(totalPages);
-  }, [filteredRequests.length, currentPage, totalPages]);
+  const totalPages = Math.max(1, Math.ceil(visibleRequests.length / itemsPerPage));
+  const safePage = Math.min(currentPage, totalPages);
+  const canReorder = !filtering && activeTab === TAB_ACTIVE;
 
   return (
     <div className="container">
-      <div className="header">
-        <div>
-          <h1>IT Request Waiting List</h1>
-          <p>Daftar pantauan status perbaikan dan request IT</p>
-        </div>
-        <div>
-          {isLoggedIn ? (
-            <button onClick={handleLogout} className="btn btn-danger">Logout</button>
-          ) : (
-            <button onClick={() => setShowLoginForm(!showLoginForm)} className="btn btn-primary">
-              {showLoginForm ? 'Batal' : 'Login Admin'}
-            </button>
-          )}
-        </div>
-      </div>
+      <Header
+        isLoggedIn={isLoggedIn}
+        showLoginForm={showLoginForm}
+        onToggleLogin={handleToggleLogin}
+        onLogout={handleLogout}
+      />
 
       {!isLoggedIn && showLoginForm && (
-        <form onSubmit={handleLogin} className="card-form">
-          <h3>Login Admin</h3>
-          <input type="text" required value={loginForm.username} onChange={(e) => setLoginForm({...loginForm, username: e.target.value})} />
-          <input type="password" required value={loginForm.password} onChange={(e) => setLoginForm({...loginForm, password: e.target.value})} />
-          <button type="submit" className="btn btn-primary">Masuk</button>
-        </form>
+        <LoginForm
+          form={loginForm}
+          onChange={(field, value) => setLoginForm((previous) => ({ ...previous, [field]: value }))}
+          onSubmit={handleLogin}
+          onCancel={handleToggleLogin}
+        />
       )}
 
       {isLoggedIn && (
-        <form onSubmit={handleSubmit} className="card-form bg-light">
-          <h3>{editId ? '✏️ Edit Request' : '+ Tambah Request Baru'}</h3>
-          <div className="form-group">
-            <input type="text" placeholder="Nama Requester" required value={newReq.nama_orang_req} onChange={(e) => setNewReq({...newReq, nama_orang_req: e.target.value})} />
-            <select value={newReq.divisi} onChange={(e) => setNewReq({...newReq, divisi: e.target.value})}>
-              <option value="Rapspoint">Rapspoint</option>
-              <option value="Vender">Vender</option>
-              <option value="Barapoint">Barapoint</option>
-              <option value="FMI">FMI</option>
-              <option value="Aoshi">Aoshi</option>
-              <option value="Station">Station</option>
-            </select>
-          </div>
-          <textarea 
-            className='form-control'
-            placeholder="Deskripsi Masalah" 
-            required 
-            value={newReq.deskripsi} 
-            onChange={(e) => setNewReq({...newReq, deskripsi: e.target.value})} 
-          />
-          <div className="form-group">
-            <input type="text" placeholder="Nama PIC (Opsional)" value={newReq.PIC} onChange={(e) => setNewReq({...newReq, PIC: e.target.value})} />
-            <select value={newReq.status} onChange={(e) => setNewReq({...newReq, status: e.target.value})}>
-              <option value="Waiting">Waiting</option>
-              <option value="On Proses">On Proses</option>
-              <option value="Done">Done</option>
-            </select>
-          </div>
-          <div style={{ padding: '10px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <input type="checkbox" id="is_priority" checked={newReq.is_priority} onChange={(e) => setNewReq({...newReq, is_priority: e.target.checked})} style={{ width: 'auto' }} />
-            <label htmlFor="is_priority" style={{ fontWeight: 'bold', color: '#d39e00', cursor: 'pointer' }}>⭐ Tandai sebagai Prioritas Utama (Jalur VIP)</label>
-          </div>
-          <div className="form-group">
-            <button type="submit" className={`btn ${editId ? 'btn-warning' : 'btn-success'}`}>
-              {editId ? 'Update Request' : 'Simpan Request'}
-            </button>
-            {editId && <button type="button" className="btn btn-danger" onClick={resetForm}>Batal Edit</button>}
-          </div>
-        </form>
+        <RequestForm
+          form={form}
+          editing={Boolean(editId)}
+          saving={saving}
+          onChange={handleFormChange}
+          onSubmit={handleSubmit}
+          onCancel={resetForm}
+        />
       )}
 
-      {/* PANEL PENCARIAN & FILTER */}
-      <div className="filter-panel">
-      <input 
-          placeholder="🔍 Cari nama atau deskripsi..." 
-          value={searchQuery}
-          onChange={(e) => { 
-            setSearchQuery(e.target.value); 
-            setCurrentPage(1); 
-          }}
-          className="search-input"
-        />
+      <Tabs activeTab={activeTab} counts={counts} onChange={handleTabChange} />
 
-        <div className="filter-dropdowns">
-          <select value={filterDivisi} onChange={(e) => { setFilterDivisi(e.target.value); setCurrentPage(1); }}>
-              <option value="Semua">Semua</option>
-              <option value="Rapspoint">Rapspoint</option>
-              <option value="Vender">Vender</option>
-              <option value="Barapoint">Barapoint</option>
-              <option value="FMI">FMI</option>
-              <option value="Aoshi">Aoshi</option>
-              <option value="Station">Station</option>
-          </select>
-          <select value={filterStatus} onChange={(e) => { setFilterStatus(e.target.value); setCurrentPage(1); }}>
-            <option value="Semua">Semua Status</option>
-            <option value="Waiting">Waiting</option>
-            <option value="On Proses">On Proses</option>
-            <option value="Done">Done</option>
-          </select>
-        </div>
-      </div>
+      <FilterPanel
+        tab={activeTab}
+        search={searchQuery}
+        divisi={filterDivisi}
+        status={filterStatus}
+        isFiltering={filtering}
+        canExport={visibleRequests.length > 0}
+        onSearchChange={(value) => {
+          setSearchQuery(value);
+          setCurrentPage(1);
+        }}
+        onDivisiChange={(value) => {
+          setFilterDivisi(value);
+          setCurrentPage(1);
+        }}
+        onStatusChange={(value) => {
+          setFilterStatus(value);
+          setCurrentPage(1);
+        }}
+        onReset={resetFilters}
+        onExport={handleExport}
+      />
 
       {loading ? (
-        <p>Loading data...</p>
+        <LoadingState />
+      ) : loadError ? (
+        <ErrorState message={loadError} onRetry={retryLoad} />
       ) : (
         <>
-          <div className="table-responsive">
-            <table>
-              <thead>
-                <tr>
-                  <th style={{ width: '5%' }}>No</th>
-                  <th style={{ width: '20%' }}>Nama ( Divisi )</th>
-                  <th style={{ width: '40%' }}>Deskripsi</th>
-                  <th style={{ width: '15%' }}>PIC</th>
-                  <th style={{ width: '10%' }}>Status</th>
-                  {isLoggedIn && <th style={{ width: '10%' }}>Aksi Admin</th>}
-                </tr>
-              </thead>
-              <tbody>
-                {currentItems.length > 0 ? currentItems.map((req, i) => {
-                  const globalNumbering = startIndex + i + 1;
-                  const realIndex = requests.findIndex(r => r.id === req.id);
-                  
-                  // Disable tombol naik turun jika prioritas ATAU status-nya berbeda dengan data di atas/bawahnya
-                  const isFirstInGroup = realIndex === 0 || requests[realIndex - 1].is_priority !== req.is_priority || requests[realIndex - 1].status !== req.status;
-                  const isLastInGroup = realIndex === requests.length - 1 || requests[realIndex + 1].is_priority !== req.is_priority || requests[realIndex + 1].status !== req.status;
+          <RequestTable
+            items={visibleRequests}
+            page={safePage}
+            itemsPerPage={itemsPerPage}
+            isLoggedIn={isLoggedIn}
+            tab={activeTab}
+            canReorder={canReorder}
+            busy={Boolean(busyId)}
+            onMove={handleMove}
+            onMoveTo={handleMoveTo}
+            onTogglePriority={handleTogglePriority}
+            onEdit={handleEditClick}
+            onDelete={setDeleteTarget}
+            onReopen={handleReopen}
+          />
 
-                  return (
-                    <tr key={req.id} className={req.is_priority ? 'row-priority' : ''}>
-                      <td>{globalNumbering}</td>
-                      <td>
-                        {req.is_priority && <span title="Prioritas VIP" style={{fontSize: '1.2em', marginRight: '5px'}}>⭐</span>}
-                        {req.nama_orang_req} <br />
-                        {req.divisi ? req.divisi : 'Management'}
-                      </td>
-                      <td>{req.deskripsi}</td>
-                      <td>{req.PIC}</td>
-                      <td><span className={`badge ${getStatusColor(req.status)}`}>{req.status}</span></td>
-                      {isLoggedIn && (
-                        <td style={{width: '200px'}}>
-                          <div className="admin-actions">
-                            <button onClick={() => togglePriority(req)} className={`btn-action btn-block ${req.is_priority ? 'btn-outline-dark' : 'btn-gold'}`}>
-                              {req.is_priority ? '❌ Hapus Top VIP' : '⭐ Jadikan Top VIP'}
-                            </button>
-                            <div className="action-row">
-                              <button onClick={() => handleMoveUp(req.id)} disabled={isFirstInGroup || searchQuery !== '' || filterDivisi !== 'Semua' || filterStatus !== 'Semua'} className="btn-action btn-gray">🔼 Naik</button>
-                              <button onClick={() => handleMoveDown(req.id)} disabled={isLastInGroup || searchQuery !== '' || filterDivisi !== 'Semua' || filterStatus !== 'Semua'} className="btn-action btn-gray">🔽 Turun</button>
-                            </div>
-                            <div className="action-row">
-                              <button onClick={() => handleEditClick(req)} className="btn-action btn-edit">✏️ Edit</button>
-                              <button onClick={() => handleDelete(req.id)} className="btn-action btn-del">🗑️ Hapus</button>
-                            </div>
-                          </div>
-                        </td>
-                      )}
-                    </tr>
-                  );
-                }) : (
-                  <tr><td colSpan={isLoggedIn ? 7 : 6} style={{textAlign: 'center', padding: '30px'}}>Tidak ada data yang cocok dengan filter pencarian.</td></tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          {totalPages > 1 && (
-            <div className="pagination">
-              <button 
-                className="btn-page" 
-                disabled={currentPage === 1} 
-                onClick={() => setCurrentPage(currentPage - 1)} // Perbaikan sintaks currentPage - 1
-              >
-                &laquo; Prev
-              </button>
-              <span className="page-info">
-                Halaman <strong>{currentPage}</strong> dari {totalPages}
-              </span>
-              <button 
-                className="btn-page" 
-                disabled={currentPage === totalPages} 
-                onClick={() => setCurrentPage(currentPage + 1)}
-              >
-                Next &raquo;
-              </button>
-            </div>
-          )}
+          <Pagination
+            page={safePage}
+            totalPages={totalPages}
+            totalItems={visibleRequests.length}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+            onItemsPerPageChange={(value) => {
+              setItemsPerPage(value);
+              setCurrentPage(1);
+            }}
+          />
         </>
       )}
+
+      <ConfirmDialog
+        open={Boolean(deleteTarget)}
+        title="Hapus request?"
+        message={
+          deleteTarget
+            ? `Request dari "${deleteTarget.nama_orang_req}" akan dihapus permanen. Tindakan ini tidak bisa dibatalkan.`
+            : ''
+        }
+        confirmLabel="Ya, Hapus"
+        busy={Boolean(busyId)}
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
+
+      <ToastContainer toasts={toasts} onDismiss={dismiss} />
     </div>
   );
 }
-
-export default App;
