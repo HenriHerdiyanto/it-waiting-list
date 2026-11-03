@@ -38,7 +38,7 @@ export const updateRequest = (id, payload) =>
 export const deleteRequest = (id) => request(`/${id}`, { method: 'DELETE' });
 
 /**
- * Menyimpan banyak perubahan sekaligus (urutan, pergeseran jadwal, pemulihan).
+ * Menyimpan banyak perubahan sekaligus (urutan dan penambahan keterangan bentrok).
  * Error dilempar jika ada satu saja yang gagal agar UI bisa melakukan rollback.
  */
 export async function saveBatch(items) {

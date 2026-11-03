@@ -5,6 +5,7 @@ import { roadmapProgress } from '../utils/roadmap';
 import { PriorityBadge } from './ScheduleBadge';
 
 const HISTORY_LABEL = {
+  keterangan: 'Keterangan bentrok',
   digeser: 'Digeser',
   dipulihkan: 'Dipulihkan',
   manual: 'Perubahan manual',
@@ -78,8 +79,11 @@ export default function RequestDetail({ request, busy, isLoggedIn, onClose, onTo
             <span className="schedule-badge schedule-overdue">Terlambat {overdueDays} hari</span>
           )}
           {request.jumlahTergeser > 0 && (
-            <span className="schedule-badge schedule-shifted">
-              Tergeser {request.jumlahTergeser}×
+            <span
+              className="schedule-badge schedule-shifted"
+              title={request.alasanTergeser || 'Jadwal pernah ditandai tergeser'}
+            >
+              Tergeser
             </span>
           )}
           {request.jadwalTerkunci && (
@@ -114,18 +118,20 @@ export default function RequestDetail({ request, busy, isLoggedIn, onClose, onTo
             <dd>{formatDateTime(request.doneAt)}</dd>
           </dl>
 
-          {request.jadwalAsli && (
-            <p className="detail-note">
-              Jadwal asli sebelum tergeser:{' '}
-              <strong>
-                {formatDateRange(request.jadwalAsli.mulai, request.jadwalAsli.estimasiSelesai)}
-              </strong>
-            </p>
-          )}
+          {request.jadwalAsli &&
+            (request.jadwalAsli.mulai !== request.mulai ||
+              request.jadwalAsli.estimasiSelesai !== request.estimasiSelesai) && (
+              <p className="detail-note">
+                Jadwal asli sebelum tergeser:{' '}
+                <strong>
+                  {formatDateRange(request.jadwalAsli.mulai, request.jadwalAsli.estimasiSelesai)}
+                </strong>
+              </p>
+            )}
 
           {request.alasanTergeser && (
             <p className="detail-note">
-              Alasan tergeser: <strong>{request.alasanTergeser}</strong>
+              Keterangan jadwal: <strong>{request.alasanTergeser}</strong>
             </p>
           )}
         </section>

@@ -44,8 +44,7 @@ import {
   sortRequests,
 } from './utils/order';
 import {
-  buildRestorePlan,
-  buildShiftPlan,
+  buildNotePlan,
   findOverlapCandidates,
 } from './utils/schedule';
 import { calculateEndDate, normalizeStart, todayKey } from './utils/date';
@@ -108,7 +107,6 @@ export default function App() {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [detailId, setDetailId] = useState(null);
   const [shiftPreview, setShiftPreview] = useState(null);
-  const [restoreTarget, setRestoreTarget] = useState(null);
 
   const [activeTab, setActiveTab] = useState(TAB_ACTIVE);
   const [searchQuery, setSearchQuery] = useState('');
@@ -195,7 +193,6 @@ export default function App() {
     setDeleteTarget(null);
     setDetailId(null);
     setShiftPreview(null);
-    setRestoreTarget(null);
     resetForm();
     notify('Anda telah logout.', 'info');
   };
@@ -259,7 +256,7 @@ export default function App() {
     existing,
     editId: targetEditId,
     targetTab = activeTab,
-    shift = null,
+    note = null,
     resetFormAfter = true,
     message = '',
   }) => {
@@ -281,24 +278,23 @@ export default function App() {
         );
       }
 
-      let shiftedUpdates = [];
-      let shiftError = null;
+      let notedUpdates = [];
+      let noteError = null;
 
-      if (shift && Array.isArray(shift.selectedIds) && shift.selectedIds.length > 0) {
-        const plan = buildShiftPlan(requests, saved, {
-          selectedIds: shift.selectedIds,
-          reasons: shift.reasons ?? {},
+      if (note && Array.isArray(note.selectedIds) && note.selectedIds.length > 0) {
+        const plan = buildNotePlan(requests, saved, {
+          selectedIds: note.selectedIds,
         });
-        shiftedUpdates = plan.items.map((entry) => entry.updated);
+        notedUpdates = plan.items.map((entry) => entry.updated);
 
         try {
-          await saveBatch(shiftedUpdates);
+          await saveBatch(notedUpdates);
         } catch (error) {
-          shiftError = error;
+          noteError = error;
         }
       }
 
-      const appliedUpdates = shiftError ? [] : shiftedUpdates;
+      const appliedUpdates = noteError ? [] : notedUpdates;
       const updatedById = new Map(
         appliedUpdates.map((item) => [String(item.id), item]),
       );
@@ -322,22 +318,15 @@ export default function App() {
         setCurrentPage(1);
       }
 
-      if (shiftError) {
+      if (noteError) {
         notify(
-          `Request tersimpan, tetapi sebagian jadwal gagal digeser: ${shiftError.message}`,
+          `Request tersimpan, tetapi keterangan bentrok gagal disimpan: ${noteError.message}`,
           'warning',
         );
       } else {
         notify(
           message || (targetEditId ? 'Request berhasil diperbarui.' : 'Request baru berhasil ditambahkan.'),
         );
-      }
-
-      if (saved.status === STATUS.DONE || saved.prioritas !== PRIORITY.URGENT) {
-        const restorePlan = buildRestorePlan(nextList, saved.id);
-        if (restorePlan.count > 0) {
-          setRestoreTarget({ urgentId: saved.id, name: saved.nama_orang_req });
-        }
       }
     } catch (error) {
       notify(error.message || 'Gagal menyimpan request.', 'error');
@@ -412,7 +401,7 @@ export default function App() {
     });
   };
 
-  const handleConfirmShift = async ({ selectedIds, reasons }) => {
+  const handleConfirmShift = async ({ selectedIds }) => {
     const preview = shiftPreview;
     if (!preview) return;
 
@@ -423,9 +412,9 @@ export default function App() {
       existing: preview.existing,
       editId: preview.editId,
       targetTab: preview.targetTab,
-      shift: { selectedIds, reasons },
+      note: { selectedIds },
       resetFormAfter: preview.resetFormAfter,
-      message: 'Request prioritas tersimpan dan jadwal proyek lain diperbarui.',
+      message: 'Request prioritas tersimpan dan keterangan ditambahkan ke proyek yang bentrok.',
     });
   };
 
@@ -480,11 +469,6 @@ export default function App() {
       if (String(editId) === String(target.id)) resetForm();
       if (String(detailId) === String(target.id)) setDetailId(null);
       setDeleteTarget(null);
-
-      const restorePlan = buildRestorePlan(ordered, target.id);
-      if (restorePlan.count > 0) {
-        setRestoreTarget({ urgentId: target.id, name: target.nama_orang_req });
-      }
 
       notify('Request berhasil dihapus.');
     } catch (error) {
@@ -681,34 +665,6 @@ export default function App() {
     }
   };
 
-  const handleRestore = async () => {
-    if (!restoreTarget) return;
-
-    const plan = buildRestorePlan(requests, restoreTarget.urgentId);
-    if (plan.count === 0) {
-      setRestoreTarget(null);
-      return;
-    }
-
-    setSaving(true);
-
-    try {
-      await saveBatch(plan.items.map((entry) => entry.updated));
-      const restoredById = new Map(
-        plan.items.map((entry) => [String(entry.id), entry.updated]),
-      );
-      setRequests((current) =>
-        sortRequests(current.map((item) => restoredById.get(String(item.id)) ?? item)),
-      );
-      setRestoreTarget(null);
-      notify(`${plan.count} proyek dipulihkan ke jadwal semula/slot terdekat.`);
-    } catch (error) {
-      notify(error.message || 'Gagal memulihkan jadwal.', 'error');
-    } finally {
-      setSaving(false);
-    }
-  };
-
   const handleTabChange = (tab) => {
     setActiveTab(tab);
     setFilterStatus('Semua');
@@ -751,9 +707,6 @@ export default function App() {
   const filtering = isFilterActive(filterOptions);
   const detailRequest = detailId
     ? requests.find((item) => String(item.id) === String(detailId)) ?? null
-    : null;
-  const restorePlan = restoreTarget
-    ? buildRestorePlan(requests, restoreTarget.urgentId)
     : null;
 
   const totalPages = Math.max(1, Math.ceil(visibleRequests.length / itemsPerPage));
@@ -907,22 +860,6 @@ export default function App() {
         busy={Boolean(busyId)}
         onConfirm={confirmDelete}
         onCancel={() => setDeleteTarget(null)}
-      />
-
-      <ConfirmDialog
-        open={Boolean(restoreTarget)}
-        title="Pulihkan jadwal proyek tergeser?"
-        message={
-          restoreTarget
-            ? `${restoreTarget.name || 'Request'} sudah tidak menjadi prioritas aktif. ${
-                restorePlan?.count ?? 0
-              } proyek dapat dipulihkan ke jadwal semula. Jika slot aslinya sudah terpakai, proyek akan dipindah ke slot terdekat.`
-            : ''
-        }
-        confirmLabel="Ya, Pulihkan"
-        busy={saving}
-        onConfirm={handleRestore}
-        onCancel={() => setRestoreTarget(null)}
       />
 
       <ToastContainer toasts={toasts} onDismiss={dismiss} />

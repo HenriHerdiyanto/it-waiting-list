@@ -8,16 +8,16 @@ Aplikasi web untuk mencatat, memantau, menjadwalkan, dan mengurutkan request/per
 - **Timeline per request** — cukup isi tanggal mulai dan durasi hari (kalender); estimasi selesai dihitung otomatis (hanya-baca), plus realisasi mulai dan tanggal selesai.
 - **Roadmap per request** — generate otomatis per hari atau susun langkah custom dengan durasi berbeda; total durasi ikut menyesuaikan saat durasi request berubah.
 - **Prioritas berjenjang** — `Normal`, `Tinggi`, dan `Urgent`.
-- **Pergeseran jadwal otomatis** — request `Urgent` dapat menggeser proyek lain yang bentrok, dengan preview dampak, centang per proyek, dan alasan.
-- **Pemulihan jadwal** — saat request Urgent selesai/dihapus, proyek yang pernah tergeser ditawarkan untuk dipulihkan.
-- **Riwayat jadwal** — audit trail siapa menggeser, kapan, dari/tanggal berapa, dan alasannya.
+- **Keterangan bentrok otomatis** — request `Urgent` yang bentrok dengan proyek lain dapat menandai proyek tersebut dengan keterangan `Tergeser oleh ... (Urgent)` lewat preview dan centang per proyek. Tanggal, durasi, dan roadmap proyek yang bentrok **tidak diubah**.
+- **Keterangan permanen** — keterangan bentrok tetap tersimpan sebagai riwayat meskipun request Urgent selesai atau dihapus. Tanggal proyek tidak pernah dipulihkan/diubah otomatis.
+- **Riwayat jadwal** — audit trail siapa yang menandai bentrok, kapan, dan keterangannya.
 - **Kesehatan jadwal** — badge `Terjadwal`, `Berjalan`, `Terlambat`, `Tergeser`, dan `Selesai`.
-- **Detail drawer** — klik baris request (tanpa perlu login) untuk melihat timeline, agenda kegiatan per tanggal, status langkah, dan riwayat pergeseran dalam satu panel.
+- **Detail drawer** — klik baris request (tanpa perlu login) untuk melihat timeline, agenda kegiatan per tanggal, status langkah, dan riwayat keterangan bentrok dalam satu panel.
 - **Filter lengkap** — divisi, status, prioritas, kesehatan jadwal, rentang tanggal, dan hanya yang tergeser.
 - **Urutan manual** — tombol Naik/Turun dan drag & drop, tersimpan permanen ke API.
 - **Multi-divisi** — satu request bisa berasal dari beberapa divisi sekaligus.
-- **Pencarian** — nama, deskripsi, PIC, divisi, alasan prioritas/tergeser, dan judul roadmap.
-- **Export CSV** — seluruh kolom jadwal, progres, dan alasan pergeseran.
+- **Pencarian** — nama, deskripsi, PIC, divisi, alasan prioritas/keterangan bentrok, dan judul roadmap.
+- **Export CSV** — seluruh kolom jadwal, progres, dan keterangan bentrok.
 - **Panel admin** — tambah, edit, hapus, ubah prioritas, atur roadmap, dan buka kembali request selesai.
 - **Notifikasi toast, loading skeleton, dan error state**.
 
@@ -36,23 +36,21 @@ Request `Pending` **tidak** muncul di tab Aktif. Tab Selesai menampilkan tanggal
 | Level | Pengaruh |
 | --- | --- |
 | `Normal` | Urutan biasa |
-| `Tinggi` | Naik di atas Normal, tidak menggeser jadwal |
-| `Urgent` | Paling atas dan boleh menggeser jadwal proyek lain yang bentrok |
+| `Tinggi` | Naik di atas Normal, tidak memberi keterangan ke jadwal |
+| `Urgent` | Paling atas dan boleh menandai proyek lain yang bentrok (tanggal tidak diubah) |
 
-Request `Urgent` wajib memiliki **alasan prioritas**. Saat disimpan dan ada proyek yang bentrok, aplikasi menampilkan **preview dampak** sebelum menyimpan.
+Request `Urgent` wajib memiliki **alasan prioritas**. Saat disimpan dan ada proyek yang bentrok, aplikasi menampilkan **preview keterangan** sebelum menyimpan.
 
-## Aturan Pergeseran Jadwal
+## Aturan Keterangan Bentrok
 
-1. Request `Urgent` dengan kebijakan **Geser proyek yang bentrok** akan mencari semua request aktif (bukan `Done`) yang rentang tanggalnya bentrok.
-2. Lingkup pergeseran default adalah **semua proyek yang bentrok**, dan bisa diubah menjadi hanya divisi sama atau PIC sama.
-3. Proyek yang dikunci (`jadwalTerkunci`) tidak bisa digeser.
+1. Request `Urgent` dengan kebijakan **Tandai proyek yang bentrok** akan mencari semua request aktif (bukan `Done`) yang rentang tanggalnya bentrok.
+2. Lingkup penandaan default adalah **semua proyek yang bentrok**, dan bisa diubah menjadi hanya divisi sama atau PIC sama.
+3. Proyek yang dikunci (`jadwalTerkunci`) tidak bisa ditandai otomatis.
 4. Proyek `Urgent` lain tidak dicentang otomatis agar tidak terjadi perang prioritas.
-5. Proyek terpilih digeser berurutan mulai dari hari setelah request Urgent selesai, sehingga tidak saling menimpa.
-6. Roadmap tiap proyek ikut bergeser.
-7. `jadwalAsli` disimpan saat pertama kali tergeser, lalu `jumlahTergeser` dan `riwayatJadwal` diperbarui.
-8. Jika dampak lebih dari 10 proyek atau 30 hari, muncul peringatan tambahan.
-
-Saat request Urgent selesai atau dihapus, aplikasi menawarkan pemulihan ke jadwal asli. Jika slot aslinya sudah terpakai, proyek dipindah ke slot terdekat.
+5. Proyek terpilih **hanya** diberi field `tergeserOleh`, `alasanTergeser` (`Tergeser oleh {nama} ({prioritas})`), `jumlahTergeser`, dan entri `riwayatJadwal` bertipe `keterangan`.
+6. Tanggal `mulai`, `estimasiSelesai`, `durasiHari`, dan `roadmap` proyek yang bentrok **tidak diubah**.
+7. Keterangan bersifat permanen; saat request Urgent selesai atau dihapus, tidak ada pemulihan/perubahan tanggal otomatis.
+8. Jika request yang sama disimpan ulang dengan bentrok yang sama, keterangan tidak digandakan.
 
 ## Roadmap
 
@@ -94,16 +92,16 @@ Tombol Naik/Turun dan drag & drop hanya menggeser request **di dalam grup priori
 | `alasanPrioritas` | string | Wajib untuk Urgent |
 | `kebijakanGeser` | enum | `geser` atau `paralel` |
 | `lingkupGeser` | enum | `semua`, `divisi`, atau `pic` |
-| `jadwalTerkunci` | boolean | Jika true, tidak boleh digeser otomatis |
+| `jadwalTerkunci` | boolean | Jika true, tidak diberi keterangan otomatis |
 | `mulai` | `YYYY-MM-DD` | Rencana tanggal mulai |
 | `durasiHari` | number | Durasi dalam hari kalender |
 | `estimasiSelesai` | `YYYY-MM-DD` | Dihitung dari mulai + durasi |
 | `actualStart` | ISO datetime | Otomatis saat status On Proses |
-| `tergeserOleh` | id/null | Request prioritas yang menggeser |
-| `alasanTergeser` | string/null | Alasan proyek ini tergeser |
-| `jadwalAsli` | object/null | `{ mulai, estimasiSelesai }` sebelum tergeser |
-| `jumlahTergeser` | number | Berapa kali jadwal bergeser |
-| `riwayatJadwal` | array | Audit trail perubahan jadwal |
+| `tergeserOleh` | id/null | Request prioritas yang menandai bentrok |
+| `alasanTergeser` | string/null | Keterangan `Tergeser oleh {nama} ({prioritas})` |
+| `jadwalAsli` | object/null | Data lama `{ mulai, estimasiSelesai }` sebelum pernah tergeser; tidak dipakai untuk penandaan baru |
+| `jumlahTergeser` | number | Berapa kali proyek ditandai bentrok |
+| `riwayatJadwal` | array | Audit trail penambahan keterangan |
 | `roadmap` | array | Langkah kerja |
 | `urutan` | number | Urutan manual |
 | `createdAt` | ISO datetime | Waktu dibuat |
@@ -160,7 +158,7 @@ VITE_API_URL=http://localhost:3001/requests
 
 ```
 src/
-├─ App.jsx                    # Orkestrasi state, tab, aksi, preview geser
+├─ App.jsx                    # Orkestrasi state, tab, aksi, preview keterangan bentrok
 ├─ api.js                     # Wrapper fetch + CRUD + batch save
 ├─ config.js                  # API URL & kredensial dari env
 ├─ constants.js               # Status, prioritas, divisi
@@ -168,7 +166,7 @@ src/
 │  └─ useToast.js
 ├─ utils/
 │  ├─ date.js                 # Utilitas tanggal kalender & overlap
-│  ├─ schedule.js             # Kesehatan jadwal, rencana geser & pemulihan
+│  ├─ schedule.js             # Kesehatan jadwal & rencana keterangan bentrok
 │  ├─ roadmap.js              # Generate, sinkronisasi, validasi roadmap
 │  ├─ order.js                # Normalisasi, sorting, filter, perpindahan
 │  └─ format.js               # Format tanggal & export CSV

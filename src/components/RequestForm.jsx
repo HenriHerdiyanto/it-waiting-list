@@ -228,7 +228,7 @@ export default function RequestForm({ form, editing, saving, onChange, onSubmit,
               ))}
             </select>
             <small className="hint">
-              Pilih <strong>paralel</strong> jika request ini tidak boleh menggeser proyek lain.
+              Pilih <strong>paralel</strong> jika request ini tidak perlu menandai proyek lain yang bentrok.
             </small>
           </label>
         </div>
@@ -236,7 +236,7 @@ export default function RequestForm({ form, editing, saving, onChange, onSubmit,
         {form.kebijakanGeser === SHIFT_POLICY.SHIFT && (
           <div className="form-grid">
             <label className="field">
-              <span>Lingkup Proyek yang Boleh Tergeser</span>
+              <span>Lingkup Proyek yang Diberi Keterangan</span>
               <select
                 value={form.lingkupGeser}
                 onChange={(event) => onChange('lingkupGeser', event.target.value)}
@@ -249,7 +249,7 @@ export default function RequestForm({ form, editing, saving, onChange, onSubmit,
               </select>
               {isUrgent && (
                 <small className="hint">
-                  Preview dampak akan muncul sebelum request Urgent disimpan.
+                  Preview keterangan akan muncul sebelum request Urgent disimpan.
                 </small>
               )}
             </label>
@@ -260,7 +260,7 @@ export default function RequestForm({ form, editing, saving, onChange, onSubmit,
                 checked={form.jadwalTerkunci}
                 onChange={(event) => onChange('jadwalTerkunci', event.target.checked)}
               />
-              <span>🔒 Kunci jadwal request ini (tidak boleh digeser otomatis)</span>
+              <span>🔒 Kunci jadwal request ini (tidak diberi keterangan otomatis)</span>
             </label>
           </div>
         )}

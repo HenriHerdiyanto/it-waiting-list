@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { SHIFT_WARNING_DAYS, SHIFT_WARNING_PROJECTS } from '../constants';
-import { formatDate, formatDateRange } from '../utils/format';
-import { buildShiftPlan, defaultShiftReason } from '../utils/schedule';
+import { formatDateRange } from '../utils/format';
+import { buildNotePlan, defaultNoteText } from '../utils/schedule';
 import { PriorityBadge } from './ScheduleBadge';
 
 export default function ShiftImpactDialog({
@@ -16,20 +15,11 @@ export default function ShiftImpactDialog({
   const [selected, setSelected] = useState(
     () => new Set((defaultSelectedIds ?? []).map(String)),
   );
-  const [reasons, setReasons] = useState(() =>
-    Object.fromEntries(
-      candidates.map((item) => [String(item.id), defaultShiftReason(urgent)]),
-    ),
-  );
 
-  const plan = buildShiftPlan(requests, urgent, {
+  const plan = buildNotePlan(requests, urgent, {
     selectedIds: [...selected],
-    reasons,
   });
-
-  const planById = new Map(plan.items.map((entry) => [String(entry.id), entry]));
-  const showBigWarning =
-    plan.count > SHIFT_WARNING_PROJECTS || plan.totalDays > SHIFT_WARNING_DAYS;
+  const note = defaultNoteText(urgent);
 
   const toggle = (id) => {
     const key = String(id);
@@ -52,9 +42,9 @@ export default function ShiftImpactDialog({
       >
         <div className="shift-dialog-header">
           <div>
-            <p className="eyebrow">Dampak Prioritas</p>
+            <p className="eyebrow">Bentrok Jadwal</p>
             <h3 id="shift-dialog-title">
-              {urgent.nama_orang_req || 'Request prioritas'} akan menggeser jadwal
+              {urgent.nama_orang_req || 'Request prioritas'} bentrok dengan jadwal proyek lain
             </h3>
             <p className="hint">
               {formatDateRange(urgent.mulai, urgent.estimasiSelesai)} ·{' '}
@@ -77,14 +67,14 @@ export default function ShiftImpactDialog({
         ) : (
           <>
             <p className="shift-explanation">
-              Pilih proyek yang ikut digeser. Proyek yang dikunci tidak bisa dipilih. Proyek
+              Pilih proyek yang diberi keterangan. Tanggal, durasi, dan roadmap proyek
+              <strong> tidak diubah</strong>. Proyek yang dikunci tidak bisa dipilih, dan proyek
               Urgent lain tidak dicentang otomatis agar tidak terjadi perang prioritas.
             </p>
 
             <div className="shift-list">
               {candidates.map((item) => {
                 const key = String(item.id);
-                const entry = planById.get(key);
                 const checked = selected.has(key);
                 const disabled = Boolean(item.jadwalTerkunci);
 
@@ -120,48 +110,22 @@ export default function ShiftImpactDialog({
 
                     <div className="shift-dates">
                       <span>{formatDateRange(item.mulai, item.estimasiSelesai)}</span>
-                      {checked && entry && (
-                        <>
-                          <span className="shift-arrow">→</span>
-                          <strong>{formatDateRange(entry.after.mulai, entry.after.estimasiSelesai)}</strong>
-                          <span className="shift-delta">+{entry.daysShifted} hari</span>
-                        </>
-                      )}
+                      <span className="muted">· tanggal tetap</span>
                     </div>
 
-                    {checked && entry && (
-                      <label className="shift-reason">
-                        <span>Alasan tergeser</span>
-                        <input
-                          type="text"
-                          value={reasons[key] ?? ''}
-                          disabled={busy}
-                          placeholder="Kenapa jadwal proyek ini bergeser?"
-                          onChange={(event) =>
-                            setReasons((previous) => ({
-                              ...previous,
-                              [key]: event.target.value,
-                            }))
-                          }
-                        />
-                      </label>
+                    {checked && (
+                      <span className="shift-note" title={note}>
+                        Keterangan: {note}
+                      </span>
                     )}
                   </div>
                 );
               })}
             </div>
 
-            {showBigWarning && (
-              <p className="roadmap-warning">
-                ⚠️ Dampak cukup besar: {plan.count} proyek dan total {plan.totalDays} hari.
-                Periksa kembali pilihan Anda sebelum menyimpan.
-              </p>
-            )}
-
             <div className="shift-summary">
-              <strong>{plan.count} proyek</strong> akan digeser
-              {plan.totalDays > 0 ? ` · total ${plan.totalDays} hari` : ''}
-              {plan.items[0] ? ` · mulai ${formatDate(plan.items[0].after.mulai)}` : ''}
+              <strong>{plan.count} proyek</strong> akan diberi keterangan
+              {plan.count > 0 ? ' · tanggal tidak diubah' : ''}
             </div>
           </>
         )}
@@ -174,13 +138,13 @@ export default function ShiftImpactDialog({
             type="button"
             className="btn btn-primary"
             disabled={busy}
-            onClick={() => onConfirm({ selectedIds: [...selected], reasons })}
+            onClick={() => onConfirm({ selectedIds: [...selected] })}
           >
             {busy
               ? 'Menyimpan...'
               : plan.count > 0
-                ? `Simpan & Geser ${plan.count} Proyek`
-                : 'Simpan Tanpa Geser'}
+                ? `Simpan & Tandai ${plan.count} Proyek`
+                : 'Simpan Tanpa Keterangan'}
           </button>
         </div>
       </div>

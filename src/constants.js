@@ -38,8 +38,8 @@ export const SHIFT_POLICY = {
 };
 
 export const SHIFT_POLICY_OPTIONS = [
-  { value: SHIFT_POLICY.SHIFT, label: 'Geser proyek yang bentrok' },
-  { value: SHIFT_POLICY.PARALLEL, label: 'Jadwalkan paralel (tidak menggeser)' },
+  { value: SHIFT_POLICY.SHIFT, label: 'Tandai proyek yang bentrok (tanggal tidak diubah)' },
+  { value: SHIFT_POLICY.PARALLEL, label: 'Abaikan proyek yang bentrok (tanpa keterangan)' },
 ];
 
 export const SHIFT_SCOPE = {
@@ -73,8 +73,6 @@ export const SCHEDULE_STATUS_OPTIONS = [
 export const SHIFTED_FILTER = 'Tergeser';
 
 export const MAX_HISTORY = 20;
-export const SHIFT_WARNING_PROJECTS = 10;
-export const SHIFT_WARNING_DAYS = 30;
 
 export const TAB_ACTIVE = 'active';
 export const TAB_PENDING = 'pending';

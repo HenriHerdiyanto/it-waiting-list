@@ -7,25 +7,14 @@ import {
   STATUS,
 } from '../constants';
 import {
-  addDays,
-  calculateEndDate,
   coerceDateKey,
   countOverdueDays,
-  diffDays,
-  normalizeStart,
   rangesOverlap,
   todayKey,
 } from './date';
-import { syncRoadmapDates } from './roadmap';
 
 function isActive(item) {
   return item && item.status !== STATUS.DONE;
-}
-
-function durationOf(item) {
-  const number = Number(item?.durasiHari);
-  if (!Number.isFinite(number) || number < 1) return 1;
-  return Math.max(1, Math.floor(number));
 }
 
 function hasSchedule(item) {
@@ -67,7 +56,7 @@ export function getOverdueDays(item, today = todayKey()) {
 }
 
 function shiftOrder(a, b) {
-  // Proyek Normal digeser lebih dulu, Urgent terakhir agar tidak saling menabrak.
+  // Proyek Normal lebih dulu, Urgent terakhir agar tidak saling menimpa keterangan.
   const weightA = PRIORITY_WEIGHT[a.prioritas] ?? PRIORITY_WEIGHT.NORMAL;
   const weightB = PRIORITY_WEIGHT[b.prioritas] ?? PRIORITY_WEIGHT.NORMAL;
   if (weightA !== weightB) return weightB - weightA;
@@ -113,29 +102,6 @@ export function findOverlapCandidates(requests, urgent, { scope = SHIFT_SCOPE.AL
     .sort(shiftOrder);
 }
 
-function findNextFreeStart(startKey, duration, blockers) {
-  let cursor = normalizeStart(startKey);
-  if (!cursor) return null;
-
-  for (let guard = 0; guard < 500; guard += 1) {
-    const end = calculateEndDate(cursor, duration);
-    const conflicts = blockers.filter((blocker) =>
-      rangesOverlap(cursor, end, blocker.mulai, blocker.estimasiSelesai),
-    );
-
-    if (conflicts.length === 0) return cursor;
-
-    const latestEnd = conflicts.reduce((latest, blocker) => {
-      const blockerEnd = coerceDateKey(blocker.estimasiSelesai);
-      return blockerEnd && blockerEnd > latest ? blockerEnd : latest;
-    }, cursor);
-
-    cursor = addDays(latestEnd, 1);
-  }
-
-  return cursor;
-}
-
 function historyEntry(entry) {
   return {
     at: new Date().toISOString(),
@@ -148,47 +114,21 @@ function appendHistory(item, entry) {
   return [...history, historyEntry(entry)].slice(-MAX_HISTORY);
 }
 
-export function defaultShiftReason(urgent) {
+/** Keterangan yang ditambahkan ke proyek yang bentrok dengan request prioritas. */
+export function defaultNoteText(urgent) {
   const name = urgent?.nama_orang_req || 'request prioritas';
-  return `Tergeser oleh ${name} (${urgent?.prioritas || PRIORITY.URGENT}).`;
-}
-
-function buildShiftedRequest(item, urgent, start, end, reason) {
-  const before = {
-    mulai: coerceDateKey(item.mulai),
-    estimasiSelesai: coerceDateKey(item.estimasiSelesai),
-  };
-  const after = { mulai: start, estimasiSelesai: end };
-
-  return {
-    ...item,
-    mulai: start,
-    durasiHari: durationOf(item),
-    estimasiSelesai: end,
-    roadmap: syncRoadmapDates(item.roadmap ?? [], start),
-    jadwalAsli: item.jadwalAsli ?? before,
-    tergeserOleh: urgent?.id ?? null,
-    alasanTergeser: reason,
-    jumlahTergeser: (Number(item.jumlahTergeser) || 0) + 1,
-    riwayatJadwal: appendHistory(item, {
-      tipe: 'digeser',
-      olehId: urgent?.id ?? null,
-      dari: before,
-      ke: after,
-      alasan: reason,
-    }),
-    updatedAt: new Date().toISOString(),
-  };
+  return `Tergeser oleh ${name} (${urgent?.prioritas || PRIORITY.URGENT})`;
 }
 
 /**
- * Menyusun rencana pergeseran tanpa mengubah data asli.
- * `selectedIds` menentukan proyek mana yang ikut digeser.
+ * Menyusun rencana penambahan keterangan tanpa mengubah tanggal proyek.
+ * Hanya `tergeserOleh`, `alasanTergeser`, `jumlahTergeser`, dan riwayat yang diperbarui.
+ * `selectedIds` menentukan proyek mana yang diberi keterangan.
  */
-export function buildShiftPlan(requests, urgent, { selectedIds = [], reasons = {} } = {}) {
+export function buildNotePlan(requests, urgent, { selectedIds = [] } = {}) {
   const start = coerceDateKey(urgent?.mulai);
   const end = coerceDateKey(urgent?.estimasiSelesai);
-  if (!start || !end) return { items: [], count: 0, totalDays: 0 };
+  if (!start || !end) return { items: [], count: 0 };
 
   const selected = new Set(Array.from(selectedIds, (id) => String(id)));
   const candidates = findOverlapCandidates(requests, urgent, {
@@ -197,128 +137,41 @@ export function buildShiftPlan(requests, urgent, { selectedIds = [], reasons = {
     .filter((item) => selected.has(String(item.id)) && !item.jadwalTerkunci)
     .sort(shiftOrder);
 
-  if (candidates.length === 0) return { items: [], count: 0, totalDays: 0 };
+  if (candidates.length === 0) return { items: [], count: 0 };
 
-  const candidateIds = new Set(candidates.map((item) => String(item.id)));
-  const blockers = requests.filter(
-    (item) =>
-      isActive(item) &&
-      hasSchedule(item) &&
-      String(item.id) !== String(urgent?.id) &&
-      !candidateIds.has(String(item.id)),
-  );
-
-  let cursor = addDays(end, 1);
-  const plan = [];
-
-  for (const item of candidates) {
-    const duration = durationOf(item);
-    const newStart = findNextFreeStart(cursor, duration, blockers);
-    if (!newStart) continue;
-
-    const newEnd = calculateEndDate(newStart, duration);
-    const reason = String(reasons[item.id] ?? '').trim() || defaultShiftReason(urgent);
-    const updated = buildShiftedRequest(item, urgent, newStart, newEnd, reason);
-
-    plan.push({
-      id: item.id,
-      request: item,
-      updated,
-      before: {
-        mulai: coerceDateKey(item.mulai),
-        estimasiSelesai: coerceDateKey(item.estimasiSelesai),
-      },
-      after: { mulai: newStart, estimasiSelesai: newEnd },
-      daysShifted: Math.max(0, diffDays(item.mulai, newStart)),
-    });
-
-    blockers.push({ id: item.id, mulai: newStart, estimasiSelesai: newEnd });
-    cursor = addDays(newEnd, 1);
-  }
-
-  return {
-    items: plan,
-    count: plan.length,
-    totalDays: plan.reduce((total, entry) => total + entry.daysShifted, 0),
-  };
-}
-
-/**
- * Menyusun rencana pemulihan untuk proyek yang pernah digeser oleh request tertentu.
- */
-export function buildRestorePlan(requests, urgentId) {
-  const targets = requests
-    .filter(
-      (item) =>
-        isActive(item) &&
-        String(item.tergeserOleh) === String(urgentId) &&
-        item.jadwalAsli?.mulai,
-    )
-    .sort((a, b) => String(a.jadwalAsli.mulai).localeCompare(String(b.jadwalAsli.mulai)));
-
-  if (targets.length === 0) return { items: [], count: 0, totalDays: 0 };
-
-  const targetIds = new Set(targets.map((item) => String(item.id)));
-  const blockers = requests.filter(
-    (item) =>
-      isActive(item) &&
-      hasSchedule(item) &&
-      !targetIds.has(String(item.id)),
-  );
-
-  const plan = [];
-
-  for (const item of targets) {
-    const duration = durationOf(item);
-    const targetStart = item.jadwalAsli.mulai;
-    const newStart = findNextFreeStart(targetStart, duration, blockers);
-    if (!newStart) continue;
-
-    const newEnd = calculateEndDate(newStart, duration);
-    const before = {
-      mulai: coerceDateKey(item.mulai),
-      estimasiSelesai: coerceDateKey(item.estimasiSelesai),
-    };
-    const after = { mulai: newStart, estimasiSelesai: newEnd };
-    const usedNearestSlot = newStart !== normalizeStart(targetStart);
+  const note = defaultNoteText(urgent);
+  const plan = candidates.map((item) => {
+    const alreadyNoted =
+      String(item.tergeserOleh ?? '') === String(urgent?.id ?? '') &&
+      String(item.alasanTergeser ?? '') === note;
 
     const updated = {
       ...item,
-      mulai: newStart,
-      durasiHari: duration,
-      estimasiSelesai: newEnd,
-      roadmap: syncRoadmapDates(item.roadmap ?? [], newStart),
-      tergeserOleh: null,
-      alasanTergeser: null,
-      jadwalAsli: null,
-      riwayatJadwal: appendHistory(item, {
-        tipe: 'dipulihkan',
-        olehId: urgentId ?? null,
-        dari: before,
-        ke: after,
-        alasan: usedNearestSlot
-          ? 'Dipulihkan ke slot terdekat karena jadwal asli sudah terpakai.'
-          : 'Jadwal dipulihkan ke tanggal semula.',
-      }),
+      tergeserOleh: urgent?.id ?? null,
+      alasanTergeser: note,
+      jumlahTergeser: alreadyNoted
+        ? Math.max(1, Number(item.jumlahTergeser) || 1)
+        : (Number(item.jumlahTergeser) || 0) + 1,
+      riwayatJadwal: alreadyNoted
+        ? item.riwayatJadwal ?? []
+        : appendHistory(item, {
+            tipe: 'keterangan',
+            olehId: urgent?.id ?? null,
+            dari: null,
+            ke: null,
+            alasan: note,
+          }),
       updatedAt: new Date().toISOString(),
     };
 
-    plan.push({
+    return {
       id: item.id,
       request: item,
       updated,
-      before,
-      after,
-      daysShifted: Math.abs(diffDays(item.mulai, newStart)),
-    });
+      note,
+    };
+  });
 
-    blockers.push({ id: item.id, mulai: newStart, estimasiSelesai: newEnd });
-  }
-
-  return {
-    items: plan,
-    count: plan.length,
-    totalDays: plan.reduce((total, entry) => total + entry.daysShifted, 0),
-  };
+  return { items: plan, count: plan.length };
 }
 

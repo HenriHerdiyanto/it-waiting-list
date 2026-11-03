@@ -40,9 +40,9 @@ export default function ScheduleBadge({ item, showShifted = true }) {
       {showShifted && item.jumlahTergeser > 0 && (
         <span
           className="schedule-badge schedule-shifted"
-          title={item.alasanTergeser || 'Jadwal pernah digeser'}
+          title={item.alasanTergeser || 'Jadwal pernah ditandai tergeser'}
         >
-          Tergeser {item.jumlahTergeser}×
+          Tergeser
         </span>
       )}
     </span>

@@ -1509,41 +1509,6 @@ tr.is-drop-target td {
   font-weight: 700;
 }
 
-.shift-delta {
-  padding: 2px 7px;
-  border-radius: 999px;
-  background: #fee2e2;
-  color: #991b1b;
-  font-size: 0.7rem;
-  font-weight: 700;
-}
-
-.shift-reason {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.shift-reason span {
-  color: var(--text-secondary);
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.shift-reason input {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 8px 10px;
-  border: 1px solid var(--border-strong);
-  border-radius: 8px;
-  background: #ffffff;
-  color: var(--text-primary);
-  font-family: inherit;
-  font-size: 0.85rem;
-}
-
 .shift-summary {
   padding: 10px 12px;
   border-radius: 9px;
