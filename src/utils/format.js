@@ -1,31 +1,74 @@
+import { coerceDateKey, parseDateKey } from './date';
+import { roadmapProgress } from './roadmap';
+import { getScheduleStatus } from './schedule';
+
 const CSV_HEADERS = [
   'No',
   'Nama',
   'Divisi',
   'Deskripsi',
   'PIC',
-  'Status',
   'Prioritas',
-  'Urutan',
+  'Alasan Prioritas',
+  'Status',
+  'Mulai',
+  'Durasi (hari)',
+  'Estimasi Selesai',
+  'Realisasi Mulai',
   'Selesai Pada',
+  'Progress',
+  'Kesehatan Jadwal',
+  'Tergeser Oleh',
+  'Alasan Tergeser',
+  'Urutan',
 ];
+
+const shortFormatter = new Intl.DateTimeFormat('id-ID', {
+  day: '2-digit',
+  month: 'short',
+});
+const longFormatter = new Intl.DateTimeFormat('id-ID', {
+  day: '2-digit',
+  month: 'short',
+  year: 'numeric',
+});
 
 function csvCell(value) {
   return `"${String(value ?? '').replaceAll('"', '""')}"`;
 }
 
-export function requestsToCsv(items, offset = 0) {
-  const rows = items.map((item, index) => [
-    offset + index + 1,
-    item.nama_orang_req,
-    item.divisi.length > 0 ? item.divisi.join('; ') : 'Management',
-    item.deskripsi,
-    item.PIC,
-    item.status,
-    item.is_priority ? 'VIP' : 'Normal',
-    item.urutan ?? '',
-    item.doneAt ?? '',
-  ]);
+export function requestsToCsv(items, offset = 0, allRequests = []) {
+  const byId = new Map(allRequests.map((item) => [String(item.id), item]));
+
+  const rows = items.map((item, index) => {
+    const progress = roadmapProgress(item.roadmap);
+    const shiftedBy = item.tergeserOleh
+      ? byId.get(String(item.tergeserOleh))
+      : null;
+
+    return [
+      offset + index + 1,
+      item.nama_orang_req,
+      item.divisi.length > 0 ? item.divisi.join('; ') : 'Management',
+      item.deskripsi,
+      item.PIC,
+      item.prioritas,
+      item.alasanPrioritas,
+      item.status,
+      item.mulai ?? '',
+      item.durasiHari ?? '',
+      item.estimasiSelesai ?? '',
+      item.actualStart ?? '',
+      item.doneAt ?? '',
+      progress.total > 0 ? `${progress.completed}/${progress.total} (${progress.percent}%)` : '',
+      getScheduleStatus(item),
+      shiftedBy
+        ? `${shiftedBy.nama_orang_req} (#${item.tergeserOleh})`
+        : item.tergeserOleh ?? '',
+      item.alasanTergeser ?? '',
+      item.urutan ?? '',
+    ];
+  });
 
   return [CSV_HEADERS, ...rows].map((row) => row.map(csvCell).join(',')).join('\r\n');
 }
@@ -48,6 +91,35 @@ export function todayStamp() {
   return new Date().toISOString().slice(0, 10);
 }
 
+export function formatDateShort(value) {
+  const key = coerceDateKey(value);
+  if (!key) return '—';
+  return shortFormatter.format(parseDateKey(key));
+}
+
+export function formatDate(value) {
+  const key = coerceDateKey(value);
+  if (!key) return '—';
+  return longFormatter.format(parseDateKey(key));
+}
+
+export function formatDateRange(start, end) {
+  const startKey = coerceDateKey(start);
+  const endKey = coerceDateKey(end);
+
+  if (!startKey && !endKey) return '—';
+  if (!startKey) return formatDate(endKey);
+  if (!endKey) return formatDate(startKey);
+  if (startKey === endKey) return formatDate(startKey);
+
+  const startYear = startKey.slice(0, 4);
+  const endYear = endKey.slice(0, 4);
+
+  return startYear === endYear
+    ? `${formatDateShort(startKey)} – ${formatDate(endKey)}`
+    : `${formatDate(startKey)} – ${formatDate(endKey)}`;
+}
+
 export function formatDateTime(value) {
   if (!value) return '—';
 
@@ -59,3 +131,4 @@ export function formatDateTime(value) {
     timeStyle: 'short',
   }).format(date);
 }
+

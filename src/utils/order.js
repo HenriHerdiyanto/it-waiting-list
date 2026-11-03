@@ -1,4 +1,25 @@
-import { STATUS, STATUS_WEIGHT, TAB_ACTIVE, TAB_DONE, TAB_PENDING } from '../constants';
+import {
+  MAX_HISTORY,
+  PRIORITY,
+  PRIORITY_WEIGHT,
+  SCHEDULE_STATUS,
+  SHIFT_POLICY,
+  SHIFT_SCOPE,
+  SHIFTED_FILTER,
+  STATUS,
+  STATUS_WEIGHT,
+  TAB_ACTIVE,
+  TAB_DONE,
+  TAB_PENDING,
+} from '../constants';
+import {
+  calculateEndDate,
+  coerceDateKey,
+  daysBetween,
+  normalizeStart,
+} from './date';
+import { normalizeRoadmap } from './roadmap';
+import { getScheduleStatus } from './schedule';
 
 const NO_ORDER = Number.MAX_SAFE_INTEGER;
 
@@ -11,13 +32,15 @@ function compareIds(a, b) {
 
 /**
  * Aturan urut final:
- * 1. VIP selalu di atas
+ * 1. Level prioritas: Urgent -> Tinggi -> Normal
  * 2. Status: On Proses -> Waiting -> Pending -> Done
  * 3. urutan manual (unik 1..N)
  * 4. createdAt lalu id sebagai tie-breaker agar selalu stabil
  */
 function compareRequests(a, b) {
-  if (a.is_priority !== b.is_priority) return a.is_priority ? -1 : 1;
+  const priorityA = PRIORITY_WEIGHT[a.prioritas] ?? PRIORITY_WEIGHT.NORMAL;
+  const priorityB = PRIORITY_WEIGHT[b.prioritas] ?? PRIORITY_WEIGHT.NORMAL;
+  if (priorityA !== priorityB) return priorityA - priorityB;
 
   const weightA = STATUS_WEIGHT[a.status] ?? 99;
   const weightB = STATUS_WEIGHT[b.status] ?? 99;
@@ -48,6 +71,25 @@ export function normalizeStatus(value) {
   return STATUS.WAITING;
 }
 
+export function normalizePriority(item = {}) {
+  const value = String(item.prioritas ?? '').trim().toLowerCase();
+
+  if (['urgent', 'vip', 'kritis', 'critical'].includes(value)) return PRIORITY.URGENT;
+  if (['tinggi', 'high', 'prioritas'].includes(value)) return PRIORITY.HIGH;
+  if (['normal', 'biasa', 'low', 'rendah'].includes(value)) return PRIORITY.NORMAL;
+
+  return item.is_priority === true || item.is_priority === 'true'
+    ? PRIORITY.URGENT
+    : PRIORITY.NORMAL;
+}
+
+function normalizeDuration(value, fallback = 1) {
+  if (value === null || value === undefined || value === '') return fallback;
+  const number = Number(value);
+  if (!Number.isFinite(number) || number < 1) return fallback;
+  return Math.max(1, Math.floor(number));
+}
+
 /**
  * Menyeragamkan divisi menjadi array bersih tanpa duplikat.
  * Mendukung data lama berupa string tunggal maupun "Aoshi, FMI".
@@ -63,12 +105,59 @@ function sameDivisi(a, b) {
   return a.every((value, index) => value === b[index]);
 }
 
+function normalizeHistory(value) {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .filter((entry) => entry && typeof entry === 'object')
+    .slice(-MAX_HISTORY)
+    .map((entry) => ({
+      at: entry.at ?? null,
+      tipe: String(entry.tipe ?? 'manual'),
+      olehId: entry.olehId ?? null,
+      dari: entry.dari ?? null,
+      ke: entry.ke ?? null,
+      alasan: String(entry.alasan ?? ''),
+    }));
+}
+
+function normalizeJadwalAsli(value, duration) {
+  if (!value || typeof value !== 'object') return null;
+
+  const mulai = coerceDateKey(value.mulai);
+  if (!mulai) return null;
+
+  return {
+    mulai,
+    estimasiSelesai:
+      coerceDateKey(value.estimasiSelesai) ?? calculateEndDate(mulai, duration),
+  };
+}
+
 export function normalizeRequest(item = {}, index = 0) {
   const status = normalizeStatus(item.status);
+  const prioritas = normalizePriority(item);
   const parsedOrder =
     item.urutan === null || item.urutan === undefined || item.urutan === ''
       ? null
       : Number(item.urutan);
+
+  const rawStart = coerceDateKey(item.mulai);
+  const rawEnd = coerceDateKey(item.estimasiSelesai);
+  let durasiHari = normalizeDuration(item.durasiHari, null);
+
+  if (!durasiHari && rawStart && rawEnd) {
+    durasiHari = Math.max(1, daysBetween(rawStart, rawEnd));
+  }
+
+  durasiHari = durasiHari || 1;
+
+  const mulai = normalizeStart(rawStart);
+  const estimasiSelesai = mulai ? calculateEndDate(mulai, durasiHari) : null;
+  const tergeserOleh =
+    item.tergeserOleh === null || item.tergeserOleh === undefined || item.tergeserOleh === ''
+      ? null
+      : item.tergeserOleh;
 
   return {
     ...item,
@@ -78,9 +167,34 @@ export function normalizeRequest(item = {}, index = 0) {
     deskripsi: String(item.deskripsi ?? ''),
     PIC: String(item.PIC ?? '').trim(),
     status,
-    is_priority: item.is_priority === true || item.is_priority === 'true',
+    prioritas,
+    is_priority: prioritas !== PRIORITY.NORMAL,
+    alasanPrioritas: String(item.alasanPrioritas ?? '').trim(),
+    kebijakanGeser:
+      item.kebijakanGeser === SHIFT_POLICY.PARALLEL
+        ? SHIFT_POLICY.PARALLEL
+        : SHIFT_POLICY.SHIFT,
+    lingkupGeser: [SHIFT_SCOPE.ALL, SHIFT_SCOPE.DIVISI, SHIFT_SCOPE.PIC].includes(
+      item.lingkupGeser,
+    )
+      ? item.lingkupGeser
+      : SHIFT_SCOPE.ALL,
+    jadwalTerkunci: item.jadwalTerkunci === true || item.jadwalTerkunci === 'true',
+    mulai,
+    durasiHari,
+    estimasiSelesai,
+    actualStart: item.actualStart ?? null,
+    tergeserOleh,
+    alasanTergeser: item.alasanTergeser ? String(item.alasanTergeser) : null,
+    jadwalAsli: normalizeJadwalAsli(item.jadwalAsli, durasiHari),
+    jumlahTergeser: Number.isFinite(Number(item.jumlahTergeser))
+      ? Math.max(0, Math.floor(Number(item.jumlahTergeser)))
+      : 0,
+    riwayatJadwal: normalizeHistory(item.riwayatJadwal),
+    roadmap: normalizeRoadmap(item.roadmap, mulai),
     urutan: Number.isFinite(parsedOrder) ? parsedOrder : null,
     createdAt: item.createdAt ?? null,
+    updatedAt: item.updatedAt ?? null,
     doneAt: status === STATUS.DONE ? (item.doneAt ?? item.createdAt ?? null) : null,
   };
 }
@@ -99,10 +213,48 @@ export function diffOrder(previous, next) {
   return next.filter((item) => previousOrder.get(String(item.id)) !== item.urutan);
 }
 
+function jsonDiff(a, b) {
+  return JSON.stringify(a ?? null) !== JSON.stringify(b ?? null);
+}
+
+function hasMigrationChanges(original, item) {
+  if (!original) return true;
+
+  if (
+    original.prioritas !== item.prioritas ||
+    original.is_priority !== item.is_priority ||
+    String(original.alasanPrioritas ?? '') !== item.alasanPrioritas ||
+    original.kebijakanGeser !== item.kebijakanGeser ||
+    original.lingkupGeser !== item.lingkupGeser ||
+    Boolean(original.jadwalTerkunci) !== item.jadwalTerkunci ||
+    coerceDateKey(original.mulai) !== item.mulai ||
+    Number(original.durasiHari || 1) !== item.durasiHari ||
+    coerceDateKey(original.estimasiSelesai) !== item.estimasiSelesai ||
+    String(original.tergeserOleh ?? '') !== String(item.tergeserOleh ?? '') ||
+    String(original.alasanTergeser ?? '') !== String(item.alasanTergeser ?? '') ||
+    Number(original.jumlahTergeser || 0) !== item.jumlahTergeser
+  ) {
+    return true;
+  }
+
+  if (
+    !Array.isArray(original.divisi) ||
+    !sameDivisi(normalizeDivisi(original.divisi), item.divisi)
+  ) {
+    return true;
+  }
+
+  return (
+    jsonDiff(original.roadmap, item.roadmap) ||
+    jsonDiff(original.jadwalAsli, item.jadwalAsli) ||
+    jsonDiff(original.riwayatJadwal, item.riwayatJadwal)
+  );
+}
+
 /**
  * Normalisasi data dari API sekaligus menyembuhkan urutan duplikat/hilang.
  * `changed` berisi item yang perlu di-PUT agar urutan tersimpan permanen,
- * termasuk migrasi satu kali divisi lama (string) menjadi array.
+ * termasuk migrasi satu kali divisi lama (string) menjadi array dan field jadwal baru.
  */
 export function prepareRequests(raw) {
   const normalized = raw.map((item, index) => normalizeRequest(item, index));
@@ -118,14 +270,11 @@ export function prepareRequests(raw) {
         ? null
         : Number(original.urutan);
     const originalDoneAt = original.doneAt ?? null;
-    const divisiChanged =
-      !Array.isArray(original.divisi) ||
-      !sameDivisi(normalizeDivisi(original.divisi), item.divisi);
 
     return (
       originalOrder !== item.urutan ||
       originalDoneAt !== (item.doneAt ?? null) ||
-      divisiChanged
+      hasMigrationChanges(original, item)
     );
   });
 
@@ -136,6 +285,10 @@ export function prepareRequests(raw) {
 export function reindexRequests(list) {
   const ordered = assignOrder(sortRequests(list));
   return { ordered, changed: diffOrder(list, ordered) };
+}
+
+function sameGroup(a, b) {
+  return Boolean(a && b) && a.prioritas === b.prioritas && a.status === b.status;
 }
 
 /**
@@ -152,9 +305,7 @@ export function buildMove(list, id, direction) {
 
   const current = sorted[index];
   const target = sorted[targetIndex];
-  if (current.is_priority !== target.is_priority || current.status !== target.status) {
-    return null;
-  }
+  if (!sameGroup(current, target)) return null;
 
   const swapped = [...sorted];
   swapped[index] = target;
@@ -180,9 +331,7 @@ export function buildMoveTo(list, sourceId, targetId) {
 
   const source = sorted[fromIndex];
   const target = sorted[toIndex];
-  if (source.is_priority !== target.is_priority || source.status !== target.status) {
-    return null;
-  }
+  if (!sameGroup(source, target)) return null;
 
   const reordered = [...sorted];
   reordered.splice(fromIndex, 1);
@@ -203,22 +352,66 @@ function belongsToTab(item, tab) {
   return item.status === STATUS.ON_PROGRESS || item.status === STATUS.WAITING;
 }
 
-/** Filter berdasarkan tab, pencarian, divisi, dan status. */
-export function filterRequests(list, { tab, search = '', divisi = 'Semua', status = 'Semua' }) {
+/** Filter berdasarkan tab, pencarian, divisi, status, prioritas, dan jadwal. */
+export function filterRequests(
+  list,
+  {
+    tab,
+    search = '',
+    divisi = 'Semua',
+    status = 'Semua',
+    prioritas = 'Semua',
+    health = 'Semua',
+    dateFrom = '',
+    dateTo = '',
+    shiftedOnly = false,
+  },
+) {
   const term = String(search ?? '').trim().toLowerCase();
+  const from = coerceDateKey(dateFrom);
+  const to = coerceDateKey(dateTo);
 
   return list.filter((item) => {
     if (!belongsToTab(item, tab)) return false;
 
     if (divisi !== 'Semua' && !item.divisi.includes(divisi)) return false;
-
+    if (prioritas !== 'Semua' && item.prioritas !== prioritas) return false;
     if (tab === TAB_ACTIVE && status !== 'Semua' && item.status !== status) return false;
+    if (shiftedOnly && item.jumlahTergeser === 0) return false;
+
+    if (health !== 'Semua') {
+      if (health === SHIFTED_FILTER) {
+        if (item.jumlahTergeser === 0) return false;
+      } else if (getScheduleStatus(item) !== health) {
+        return false;
+      }
+    }
+
+    if (from || to) {
+      const start = coerceDateKey(item.mulai);
+      const end = coerceDateKey(item.estimasiSelesai);
+      if (!start || !end) return false;
+      if (from && end < from) return false;
+      if (to && start > to) return false;
+    }
 
     if (!term) return true;
 
-    return [item.nama_orang_req, item.deskripsi, item.PIC, ...item.divisi].some((value) =>
-      String(value ?? '').toLowerCase().includes(term),
-    );
+    const searchable = [
+      item.nama_orang_req,
+      item.deskripsi,
+      item.PIC,
+      item.alasanPrioritas,
+      item.alasanTergeser,
+      item.status,
+      item.prioritas,
+      ...item.divisi,
+      ...(Array.isArray(item.roadmap)
+        ? item.roadmap.flatMap((step) => [step.judul, step.deskripsi])
+        : []),
+    ];
+
+    return searchable.some((value) => String(value ?? '').toLowerCase().includes(term));
   });
 }
 
@@ -238,6 +431,27 @@ export function getVisibleRequests(list, options) {
   return filtered;
 }
 
-export function isFilterActive({ search = '', divisi = 'Semua', status = 'Semua' }) {
-  return String(search).trim() !== '' || divisi !== 'Semua' || status !== 'Semua';
+export function isFilterActive({
+  search = '',
+  divisi = 'Semua',
+  status = 'Semua',
+  prioritas = 'Semua',
+  health = 'Semua',
+  dateFrom = '',
+  dateTo = '',
+  shiftedOnly = false,
+}) {
+  return (
+    String(search).trim() !== '' ||
+    divisi !== 'Semua' ||
+    status !== 'Semua' ||
+    prioritas !== 'Semua' ||
+    health !== 'Semua' ||
+    Boolean(dateFrom) ||
+    Boolean(dateTo) ||
+    Boolean(shiftedOnly)
+  );
 }
+
+export { SCHEDULE_STATUS };
+

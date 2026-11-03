@@ -1,6 +1,8 @@
-import { useState } from 'react';
-import { STATUS, TAB_DONE, TAB_PENDING } from '../constants';
-import { formatDateTime } from '../utils/format';
+import { useRef, useState } from 'react';
+import { PRIORITY, STATUS, TAB_DONE, TAB_PENDING } from '../constants';
+import { formatDateRange, formatDateTime } from '../utils/format';
+import { roadmapProgress } from '../utils/roadmap';
+import ScheduleBadge, { PriorityBadge } from './ScheduleBadge';
 
 const STATUS_CLASS = {
   [STATUS.WAITING]: 'status-waiting',
@@ -10,7 +12,7 @@ const STATUS_CLASS = {
 };
 
 function sameGroup(a, b) {
-  return Boolean(a && b) && a.is_priority === b.is_priority && a.status === b.status;
+  return Boolean(a && b) && a.prioritas === b.prioritas && a.status === b.status;
 }
 
 export default function RequestTable({
@@ -27,14 +29,16 @@ export default function RequestTable({
   onEdit,
   onDelete,
   onReopen,
+  onDetail,
 }) {
   const [dragState, setDragState] = useState({ id: null, overId: null });
+  const ignoreClickRef = useRef(false);
 
   const start = (page - 1) * itemsPerPage;
   const pageItems = items.slice(start, start + itemsPerPage);
   const isDoneTab = tab === TAB_DONE;
   const isPendingTab = tab === TAB_PENDING;
-  const columnCount = 5 + (isDoneTab ? 1 : 0) + (isLoggedIn ? 1 : 0);
+  const columnCount = 6 + (isDoneTab ? 1 : 0) + (isLoggedIn ? 1 : 0);
   const dragEnabled = isLoggedIn && canReorder && !isDoneTab && !busy;
 
   const emptyMessage = isDoneTab
@@ -82,11 +86,11 @@ export default function RequestTable({
 
   return (
     <>
-      {dragEnabled && (
-        <p className="drag-hint">
-          💡 Seret baris untuk mengurutkan. Hanya bisa di dalam grup prioritas/status yang sama.
-        </p>
-      )}
+      <p className="drag-hint">
+        💡 Klik baris untuk melihat detail jadwal dan agenda per tanggal.
+        {dragEnabled &&
+          ' Seret baris untuk mengurutkan (hanya dalam grup prioritas/status yang sama).'}
+      </p>
 
       <div className="table-responsive">
         <table>
@@ -96,6 +100,7 @@ export default function RequestTable({
               <th scope="col" className="col-name">Nama (Divisi)</th>
               <th scope="col" className="col-desc">Deskripsi</th>
               <th scope="col" className="col-pic">PIC</th>
+              <th scope="col" className="col-schedule">Jadwal</th>
               <th scope="col" className="col-status">Status</th>
               {isDoneTab && <th scope="col" className="col-date">Selesai</th>}
               {isLoggedIn && <th scope="col" className="col-actions">Aksi Admin</th>}
@@ -117,27 +122,57 @@ export default function RequestTable({
               const next = items[globalIndex + 1];
               const canMoveUp = canReorder && sameGroup(previous, req);
               const canMoveDown = canReorder && sameGroup(next, req);
+              const progress = roadmapProgress(req.roadmap);
 
               const rowClass = [
-                req.is_priority ? 'row-priority' : '',
+                req.prioritas === PRIORITY.URGENT
+                  ? 'row-priority'
+                  : req.prioritas === PRIORITY.HIGH
+                    ? 'row-high'
+                    : '',
+                'row-clickable',
                 dragState.id === req.id ? 'is-dragging' : '',
                 dragState.overId === req.id ? 'is-drop-target' : '',
               ]
                 .filter(Boolean)
                 .join(' ');
 
+              const handleRowOpen = () => {
+                if (ignoreClickRef.current) {
+                  ignoreClickRef.current = false;
+                  return;
+                }
+
+                onDetail?.(req);
+              };
+
               return (
                 <tr
                   key={req.id}
                   className={rowClass}
+                  tabIndex={0}
+                  onClick={handleRowOpen}
+                  onKeyDown={(event) => {
+                    if (event.target !== event.currentTarget) return;
+                    if (event.key !== 'Enter' && event.key !== ' ') return;
+
+                    event.preventDefault();
+                    handleRowOpen();
+                  }}
                   draggable={dragEnabled}
                   onDragStart={(event) => {
                     if (!dragEnabled) return;
+                    ignoreClickRef.current = true;
                     setDragState({ id: req.id, overId: null });
                     event.dataTransfer.effectAllowed = 'move';
                     event.dataTransfer.setData('text/plain', String(req.id));
                   }}
-                  onDragEnd={() => setDragState({ id: null, overId: null })}
+                  onDragEnd={() => {
+                    setDragState({ id: null, overId: null });
+                    window.setTimeout(() => {
+                      ignoreClickRef.current = false;
+                    }, 0);
+                  }}
                   onDragOver={(event) => handleDragOver(event, req)}
                   onDragLeave={(event) => handleDragLeave(event, req)}
                   onDrop={(event) => handleDrop(event, req)}
@@ -153,16 +188,12 @@ export default function RequestTable({
 
                   <td>
                     <div className="requester">
-                      {req.is_priority && (
-                        <span className="priority-star" title="Prioritas VIP" aria-label="Prioritas VIP">
-                          ⭐
-                        </span>
-                      )}
                       <div>
                         <strong>{req.nama_orang_req || '-'}</strong>
-                        <span title={req.divisi.join(', ')}>
+                        <span className="requester-divisi" title={req.divisi.join(', ')}>
                           {req.divisi.length > 0 ? req.divisi.join(', ') : 'Management'}
                         </span>
+                        <PriorityBadge value={req.prioritas} />
                       </div>
                     </div>
                   </td>
@@ -171,6 +202,40 @@ export default function RequestTable({
 
                   <td>{req.PIC || <span className="muted">—</span>}</td>
 
+                  <td className="cell-schedule">
+                    <div className="schedule-cell">
+                      {req.mulai && req.estimasiSelesai ? (
+                        <strong className="schedule-range">
+                          {formatDateRange(req.mulai, req.estimasiSelesai)}
+                        </strong>
+                      ) : (
+                        <span className="muted">Belum dijadwalkan</span>
+                      )}
+
+                      <span className="schedule-meta">{req.durasiHari} hari</span>
+
+                      <ScheduleBadge item={req} />
+
+                      {progress.total > 0 && (
+                        <div
+                          className="mini-progress"
+                          title={`Roadmap ${progress.completed}/${progress.total} langkah (${progress.percent}%)`}
+                        >
+                          <div
+                            className="mini-progress-fill"
+                            style={{ width: `${progress.percent}%` }}
+                          />
+                        </div>
+                      )}
+
+                      {req.jumlahTergeser > 0 && req.alasanTergeser && (
+                        <span className="shift-note" title={req.alasanTergeser}>
+                          {req.alasanTergeser}
+                        </span>
+                      )}
+                    </div>
+                  </td>
+
                   <td>
                     <span className={`badge ${STATUS_CLASS[req.status] ?? ''}`}>{req.status}</span>
                   </td>
@@ -178,17 +243,23 @@ export default function RequestTable({
                   {isDoneTab && <td className="cell-date">{formatDateTime(req.doneAt)}</td>}
 
                   {isLoggedIn && (
-                    <td>
+                    <td onClick={(event) => event.stopPropagation()}>
                       <div className="admin-actions">
                         {!isDoneTab && (
                           <>
                             <button
                               type="button"
                               onClick={() => onTogglePriority(req)}
-                              className={`btn-action btn-block ${req.is_priority ? 'btn-outline-dark' : 'btn-gold'}`}
+                              className={`btn-action btn-block ${
+                                req.prioritas === PRIORITY.URGENT
+                                  ? 'btn-outline-dark'
+                                  : 'btn-gold'
+                              }`}
                               disabled={busy}
                             >
-                              {req.is_priority ? '❌ Hapus Top VIP' : '⭐ Jadikan Top VIP'}
+                              {req.prioritas === PRIORITY.URGENT
+                                ? '❌ Hapus Urgent'
+                                : '⭐ Jadikan Urgent'}
                             </button>
 
                             <div className="action-row">
@@ -217,13 +288,24 @@ export default function RequestTable({
                         <div className="action-row">
                           <button
                             type="button"
+                            onClick={() => onDetail(req)}
+                            disabled={busy}
+                            className="btn-action btn-detail"
+                          >
+                            📋 Detail
+                          </button>
+
+                          <button
+                            type="button"
                             onClick={() => onEdit(req)}
                             disabled={busy}
                             className="btn-action btn-edit"
                           >
                             ✏️ Edit
                           </button>
+                        </div>
 
+                        <div className="action-row">
                           {isDoneTab && (
                             <button
                               type="button"
@@ -234,16 +316,16 @@ export default function RequestTable({
                               ↩️ Buka
                             </button>
                           )}
-                        </div>
 
-                        <button
-                          type="button"
-                          onClick={() => onDelete(req)}
-                          disabled={busy}
-                          className="btn-action btn-del btn-block"
-                        >
-                          🗑️ Hapus
-                        </button>
+                          <button
+                            type="button"
+                            onClick={() => onDelete(req)}
+                            disabled={busy}
+                            className="btn-action btn-del"
+                          >
+                            🗑️ Hapus
+                          </button>
+                        </div>
                       </div>
                     </td>
                   )}

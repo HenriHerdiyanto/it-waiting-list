@@ -38,11 +38,10 @@ export const updateRequest = (id, payload) =>
 export const deleteRequest = (id) => request(`/${id}`, { method: 'DELETE' });
 
 /**
- * Menyimpan perubahan urutan secara batch.
- * Hanya item yang benar-benar berubah yang dikirim, dan error dilempar
- * jika ada satu saja yang gagal agar UI bisa melakukan rollback.
+ * Menyimpan banyak perubahan sekaligus (urutan, pergeseran jadwal, pemulihan).
+ * Error dilempar jika ada satu saja yang gagal agar UI bisa melakukan rollback.
  */
-export async function saveOrderChanges(items) {
+export async function saveBatch(items) {
   if (items.length === 0) return;
 
   const results = await Promise.allSettled(
@@ -55,3 +54,6 @@ export async function saveOrderChanges(items) {
     throw new Error(reason instanceof Error ? reason.message : 'Sebagian data gagal disimpan.');
   }
 }
+
+// Alias lama agar pemanggil yang sudah ada tetap berjalan.
+export const saveOrderChanges = saveBatch;

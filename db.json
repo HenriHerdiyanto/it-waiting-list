@@ -1,12 +1,266 @@
 {
   "requests": [
     {
-      "nama_orang_req": "farhan",
-      "divisi": "Aoshi",
-      "deskripsi": "testingg",
+      "id": 1,
+      "nama_orang_req": "Farhan",
+      "divisi": ["Aoshi"],
+      "deskripsi": "Server ERP down, produksi berhenti. Perlu perbaikan segera.",
       "PIC": "Bima",
+      "status": "On Proses",
+      "prioritas": "Urgent",
+      "is_priority": true,
+      "alasanPrioritas": "Server ERP mati dan menghentikan produksi seluruh divisi.",
+      "kebijakanGeser": "geser",
+      "lingkupGeser": "semua",
+      "jadwalTerkunci": false,
+      "mulai": "2026-11-03",
+      "durasiHari": 3,
+      "estimasiSelesai": "2026-11-05",
+      "actualStart": "2026-11-03T01:30:00.000Z",
+      "tergeserOleh": null,
+      "alasanTergeser": null,
+      "jadwalAsli": null,
+      "jumlahTergeser": 0,
+      "riwayatJadwal": [],
+      "roadmap": [
+        {
+          "id": "step-erp-1",
+          "judul": "Analisa log & backup database",
+          "deskripsi": "Pastikan backup sebelum perubahan konfigurasi.",
+          "durasiHari": 1,
+          "status": "done",
+          "mulai": "2026-11-03",
+          "selesai": "2026-11-03"
+        },
+        {
+          "id": "step-erp-2",
+          "judul": "Perbaikan service & konfigurasi",
+          "deskripsi": "Perbaiki service ERP yang gagal start.",
+          "durasiHari": 1,
+          "status": "done",
+          "mulai": "2026-11-04",
+          "selesai": "2026-11-04"
+        },
+        {
+          "id": "step-erp-3",
+          "judul": "Uji coba & serah terima",
+          "deskripsi": "Uji transaksi dan konfirmasi ke user.",
+          "durasiHari": 1,
+          "status": "todo",
+          "mulai": "2026-11-05",
+          "selesai": "2026-11-05"
+        }
+      ],
+      "urutan": 1,
+      "createdAt": "2026-11-02T02:00:00.000Z",
+      "updatedAt": "2026-11-03T01:30:00.000Z",
+      "doneAt": null
+    },
+    {
+      "id": 2,
+      "nama_orang_req": "Andi",
+      "divisi": ["FMI"],
+      "deskripsi": "Update aplikasi stok gudang ke versi terbaru.",
+      "PIC": "Rizal",
+      "status": "Waiting",
+      "prioritas": "Normal",
+      "is_priority": false,
+      "alasanPrioritas": "",
+      "kebijakanGeser": "geser",
+      "lingkupGeser": "semua",
+      "jadwalTerkunci": false,
+      "mulai": "2026-11-06",
+      "durasiHari": 2,
+      "estimasiSelesai": "2026-11-07",
+      "actualStart": null,
+      "tergeserOleh": 1,
+      "alasanTergeser": "Tergeser oleh perbaikan server ERP (Urgent).",
+      "jadwalAsli": {
+        "mulai": "2026-11-04",
+        "estimasiSelesai": "2026-11-05"
+      },
+      "jumlahTergeser": 1,
+      "riwayatJadwal": [
+        {
+          "at": "2026-11-03T00:45:00.000Z",
+          "tipe": "digeser",
+          "olehId": 1,
+          "dari": {
+            "mulai": "2026-11-04",
+            "estimasiSelesai": "2026-11-05"
+          },
+          "ke": {
+            "mulai": "2026-11-06",
+            "estimasiSelesai": "2026-11-07"
+          },
+          "alasan": "Tergeser oleh perbaikan server ERP (Urgent)."
+        }
+      ],
+      "roadmap": [
+        {
+          "id": "step-stok-1",
+          "judul": "Backup data & aplikasi lama",
+          "deskripsi": "",
+          "durasiHari": 1,
+          "status": "todo",
+          "mulai": "2026-11-06",
+          "selesai": "2026-11-06"
+        },
+        {
+          "id": "step-stok-2",
+          "judul": "Deploy versi baru & uji coba",
+          "deskripsi": "",
+          "durasiHari": 1,
+          "status": "todo",
+          "mulai": "2026-11-07",
+          "selesai": "2026-11-07"
+        }
+      ],
+      "urutan": 3,
+      "createdAt": "2026-11-02T03:00:00.000Z",
+      "updatedAt": "2026-11-03T00:45:00.000Z",
+      "doneAt": null
+    },
+    {
+      "id": 3,
+      "nama_orang_req": "Sari",
+      "divisi": ["Station"],
+      "deskripsi": "Printer kasir tidak bisa mencetak struk.",
+      "PIC": "Rizal",
+      "status": "Waiting",
+      "prioritas": "Normal",
+      "is_priority": false,
+      "alasanPrioritas": "",
+      "kebijakanGeser": "geser",
+      "lingkupGeser": "semua",
+      "jadwalTerkunci": false,
+      "mulai": "2026-11-10",
+      "durasiHari": 1,
+      "estimasiSelesai": "2026-11-10",
+      "actualStart": null,
+      "tergeserOleh": 1,
+      "alasanTergeser": "Tergeser oleh perbaikan server ERP (Urgent).",
+      "jadwalAsli": {
+        "mulai": "2026-11-05",
+        "estimasiSelesai": "2026-11-05"
+      },
+      "jumlahTergeser": 1,
+      "riwayatJadwal": [
+        {
+          "at": "2026-11-03T00:45:00.000Z",
+          "tipe": "digeser",
+          "olehId": 1,
+          "dari": {
+            "mulai": "2026-11-05",
+            "estimasiSelesai": "2026-11-05"
+          },
+          "ke": {
+            "mulai": "2026-11-10",
+            "estimasiSelesai": "2026-11-10"
+          },
+          "alasan": "Tergeser oleh perbaikan server ERP (Urgent)."
+        }
+      ],
+      "roadmap": [
+        {
+          "id": "step-printer-1",
+          "judul": "Cek koneksi & driver printer",
+          "deskripsi": "",
+          "durasiHari": 1,
+          "status": "todo",
+          "mulai": "2026-11-10",
+          "selesai": "2026-11-10"
+        }
+      ],
+      "urutan": 4,
+      "createdAt": "2026-11-02T04:00:00.000Z",
+      "updatedAt": "2026-11-03T00:45:00.000Z",
+      "doneAt": null
+    },
+    {
+      "id": 4,
+      "nama_orang_req": "Rina",
+      "divisi": ["Rapspoint"],
+      "deskripsi": "Permintaan akun baru untuk staf administrasi.",
+      "PIC": "Bima",
+      "status": "Pending",
+      "prioritas": "Tinggi",
+      "is_priority": true,
+      "alasanPrioritas": "Staf baru mulai bekerja minggu depan.",
+      "kebijakanGeser": "geser",
+      "lingkupGeser": "semua",
+      "jadwalTerkunci": false,
+      "mulai": "2026-11-11",
+      "durasiHari": 1,
+      "estimasiSelesai": "2026-11-11",
+      "actualStart": null,
+      "tergeserOleh": null,
+      "alasanTergeser": null,
+      "jadwalAsli": null,
+      "jumlahTergeser": 0,
+      "riwayatJadwal": [],
+      "roadmap": [
+        {
+          "id": "step-akun-1",
+          "judul": "Buat akun & atur hak akses",
+          "deskripsi": "Menunggu persetujuan atasan.",
+          "durasiHari": 1,
+          "status": "todo",
+          "mulai": "2026-11-11",
+          "selesai": "2026-11-11"
+        }
+      ],
+      "urutan": 2,
+      "createdAt": "2026-11-02T05:00:00.000Z",
+      "updatedAt": "2026-11-02T05:00:00.000Z",
+      "doneAt": null
+    },
+    {
+      "id": 5,
+      "nama_orang_req": "Dedi",
+      "divisi": ["Vender"],
+      "deskripsi": "Install ulang laptop kasir yang lemot.",
+      "PIC": "Rizal",
       "status": "Done",
-      "id": 1
+      "prioritas": "Normal",
+      "is_priority": false,
+      "alasanPrioritas": "",
+      "kebijakanGeser": "geser",
+      "lingkupGeser": "semua",
+      "jadwalTerkunci": false,
+      "mulai": "2026-10-28",
+      "durasiHari": 2,
+      "estimasiSelesai": "2026-10-29",
+      "actualStart": "2026-10-28T02:00:00.000Z",
+      "tergeserOleh": null,
+      "alasanTergeser": null,
+      "jadwalAsli": null,
+      "jumlahTergeser": 0,
+      "riwayatJadwal": [],
+      "roadmap": [
+        {
+          "id": "step-laptop-1",
+          "judul": "Backup data pengguna",
+          "deskripsi": "",
+          "durasiHari": 1,
+          "status": "done",
+          "mulai": "2026-10-28",
+          "selesai": "2026-10-28"
+        },
+        {
+          "id": "step-laptop-2",
+          "judul": "Install ulang & restore data",
+          "deskripsi": "",
+          "durasiHari": 1,
+          "status": "done",
+          "mulai": "2026-10-29",
+          "selesai": "2026-10-29"
+        }
+      ],
+      "urutan": 5,
+      "createdAt": "2026-10-27T02:00:00.000Z",
+      "updatedAt": "2026-10-29T09:00:00.000Z",
+      "doneAt": "2026-10-29T09:00:00.000Z"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"
