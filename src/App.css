@@ -635,6 +635,10 @@ tr.is-drop-target td {
   background-color: #e0e7ff;
   color: #3730a3;
 }
+.status-revisi {
+  background-color: #ede9fe;
+  color: #5b21b6;
+}
 .status-pending {
   background-color: #ffedd5;
   color: #9a3412;
@@ -729,6 +733,14 @@ tr.is-drop-target td {
 }
 .btn-reopen:hover:not(:disabled) {
   background-color: #0d9488;
+}
+
+.btn-revisi {
+  background-color: #8b5cf6;
+  color: #ffffff;
+}
+.btn-revisi:hover:not(:disabled) {
+  background-color: #7c3aed;
 }
 
 .btn-del {
@@ -911,6 +923,40 @@ tr.is-drop-target td {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
+}
+
+.revision-field textarea {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 96px;
+  padding: 11px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: 9px;
+  background: #ffffff;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.95rem;
+  resize: vertical;
+}
+
+.revision-field textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12);
+}
+
+.revision-field {
+  margin-bottom: 10px;
+}
+
+.revision-error {
+  margin: 0 0 10px !important;
+  color: #b91c1c !important;
+  font-size: 0.84rem !important;
+}
+
+.revision-hint {
+  margin: 0 0 18px !important;
 }
 
 /* --- LOADING & ERROR STATE --- */
@@ -1595,6 +1641,26 @@ tr.is-drop-target td {
   white-space: pre-line;
   color: var(--text-primary);
   font-size: 0.92rem;
+}
+
+.detail-original {
+  margin-top: 12px;
+}
+
+.detail-original summary {
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.detail-original .detail-text {
+  margin-top: 8px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: var(--text-secondary);
+  font-size: 0.86rem;
 }
 
 .detail-grid {

@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
-import { formatDate, formatDateRange, formatDateTime } from '../utils/format';
+import { STATUS } from '../constants';
+import { formatDate, formatDateRange, formatDateTime, getDisplayDescription } from '../utils/format';
 import { getOverdueDays, getScheduleStatus } from '../utils/schedule';
 import { roadmapProgress } from '../utils/roadmap';
 import { PriorityBadge } from './ScheduleBadge';
@@ -47,6 +48,10 @@ export default function RequestDetail({ request, busy, isLoggedIn, onClose, onTo
   const progress = roadmapProgress(request.roadmap);
   const scheduleStatus = getScheduleStatus(request);
   const overdueDays = getOverdueDays(request);
+  const isRevisi = request.status === STATUS.REVISI;
+  const displayDescription = getDisplayDescription(request);
+  const hasDifferentOriginal =
+    isRevisi && String(request.deskripsi ?? '').trim() !== displayDescription.trim();
 
   return (
     <div className="modal-backdrop drawer-backdrop" role="presentation" onClick={onClose}>
@@ -92,8 +97,14 @@ export default function RequestDetail({ request, busy, isLoggedIn, onClose, onTo
         </div>
 
         <section className="detail-section">
-          <h4>Deskripsi</h4>
-          <p className="detail-text">{request.deskripsi || '—'}</p>
+          <h4>{isRevisi ? 'Deskripsi Revisi' : 'Deskripsi'}</h4>
+          <p className="detail-text">{displayDescription || '—'}</p>
+          {hasDifferentOriginal && (
+            <details className="detail-original">
+              <summary>Deskripsi awal (sebelum revisi)</summary>
+              <p className="detail-text">{request.deskripsi}</p>
+            </details>
+          )}
         </section>
 
         {request.alasanPrioritas && (
@@ -114,7 +125,7 @@ export default function RequestDetail({ request, busy, isLoggedIn, onClose, onTo
             <dd>{request.durasiHari} hari</dd>
             <dt>Realisasi Mulai</dt>
             <dd>{formatDateTime(request.actualStart)}</dd>
-            <dt>Selesai</dt>
+            <dt>{request.status === STATUS.REVISI ? 'Selesai (sebelum revisi)' : 'Selesai'}</dt>
             <dd>{formatDateTime(request.doneAt)}</dd>
           </dl>
 

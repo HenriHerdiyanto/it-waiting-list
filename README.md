@@ -4,7 +4,9 @@ Aplikasi web untuk mencatat, memantau, menjadwalkan, dan mengurutkan request/per
 
 ## Fitur Utama
 
-- **Tab Aktif, Pending & Selesai** — `On Proses`/`Waiting` di tab Aktif, `Pending` di tab sendiri, dan `Done` diarsipkan di tab Selesai.
+- **Tab Aktif, Revisi, Pending & Selesai** — `On Proses`/`Waiting` di tab Aktif, `Revisi` di tab sendiri, `Pending` di tab sendiri, dan `Done` diarsipkan di tab Selesai.
+- **Alur revisi** — request `Done` yang masih bermasalah bisa diubah ke `Revisi` lewat dropdown status atau tombol cepat di tab Selesai. Saat masuk `Revisi`, **deskripsi revisi wajib diisi**. Tanggal selesai terakhir tetap tersimpan, sedangkan tanggal dan roadmap tidak diubah otomatis.
+- **Deskripsi sesuai status** — selama status `Revisi`, tabel dan detail menampilkan **deskripsi revisi**. Untuk status lain yang tampil adalah deskripsi awal. Deskripsi awal tetap bisa dibuka dari detail request.
 - **Timeline per request** — cukup isi tanggal mulai dan durasi hari (kalender); estimasi selesai dihitung otomatis (hanya-baca), plus realisasi mulai dan tanggal selesai.
 - **Roadmap per request** — generate otomatis per hari atau susun langkah custom dengan durasi berbeda; total durasi ikut menyesuaikan saat durasi request berubah.
 - **Prioritas berjenjang** — `Normal`, `Tinggi`, dan `Urgent`.
@@ -16,8 +18,8 @@ Aplikasi web untuk mencatat, memantau, menjadwalkan, dan mengurutkan request/per
 - **Filter lengkap** — divisi, status, prioritas, kesehatan jadwal, rentang tanggal, dan hanya yang tergeser.
 - **Urutan manual** — tombol Naik/Turun dan drag & drop, tersimpan permanen ke API.
 - **Multi-divisi** — satu request bisa berasal dari beberapa divisi sekaligus.
-- **Pencarian** — nama, deskripsi, PIC, divisi, alasan prioritas/keterangan bentrok, dan judul roadmap.
-- **Export CSV** — seluruh kolom jadwal, progres, dan keterangan bentrok.
+- **Pencarian** — nama, deskripsi awal, deskripsi revisi, PIC, divisi, alasan prioritas/keterangan bentrok, dan judul roadmap.
+- **Export CSV** — seluruh kolom jadwal, progres, keterangan bentrok, serta deskripsi awal dan deskripsi revisi.
 - **Panel admin** — tambah, edit, hapus, ubah prioritas, atur roadmap, dan buka kembali request selesai.
 - **Notifikasi toast, loading skeleton, dan error state**.
 
@@ -26,10 +28,13 @@ Aplikasi web untuk mencatat, memantau, menjadwalkan, dan mengurutkan request/per
 | Tab | Status yang tampil |
 | --- | --- |
 | Aktif | `On Proses`, `Waiting` |
+| Revisi | `Revisi` |
 | Pending | `Pending` |
 | Selesai | `Done` (arsip) |
 
-Request `Pending` **tidak** muncul di tab Aktif. Tab Selesai menampilkan tanggal selesai dan tombol **Buka Kembali** (mengembalikan request ke `Waiting`).
+Request `Pending` **tidak** muncul di tab Aktif. Tab Selesai menampilkan tanggal selesai dan tombol **Buka Kembali** (mengembalikan request ke `Waiting`) serta **Revisi** (meminta deskripsi revisi lalu memindahkan ke tab Revisi tanpa mengubah tanggal/roadmap).
+
+Saat status `Revisi`, tabel dan detail menampilkan **deskripsi revisi**. Jika status bukan `Revisi`, yang tampil adalah deskripsi awal. Deskripsi revisi wajib diisi, baik lewat form edit maupun tombol cepat di tab Selesai.
 
 ## Prioritas
 
@@ -71,7 +76,7 @@ Tombol **Generate harian** membuat roadmap sesuai durasi request. Langkah bisa d
 Urutan ditentukan berlapis:
 
 1. Level prioritas: `Urgent` → `Tinggi` → `Normal`.
-2. Status: `On Proses` → `Waiting` → `Pending` → `Done`.
+2. Status: `On Proses` → `Waiting` → `Revisi` → `Pending` → `Done`.
 3. Urutan manual (`urutan`, unik 1..N).
 4. `createdAt` lalu `id` sebagai tie-breaker.
 
@@ -84,9 +89,10 @@ Tombol Naik/Turun dan drag & drop hanya menggeser request **di dalam grup priori
 | `id` | number/string | ID dari API |
 | `nama_orang_req` | string | Nama requester |
 | `divisi` | string[] | Bisa lebih dari satu |
-| `deskripsi` | string | Deskripsi masalah |
+| `deskripsi` | string | Deskripsi masalah awal |
+| `deskripsiRevisi` | string | Deskripsi kesalahan/perbaikan; wajib saat status `Revisi` dan yang ditampilkan ke user |
 | `PIC` | string | Penanggung jawab |
-| `status` | enum | `On Proses`, `Waiting`, `Pending`, `Done` |
+| `status` | enum | `On Proses`, `Waiting`, `Revisi`, `Pending`, `Done` |
 | `prioritas` | enum | `Normal`, `Tinggi`, `Urgent` |
 | `is_priority` | boolean | Kompatibilitas data lama; true jika prioritas bukan Normal |
 | `alasanPrioritas` | string | Wajib untuk Urgent |
@@ -106,7 +112,7 @@ Tombol Naik/Turun dan drag & drop hanya menggeser request **di dalam grup priori
 | `urutan` | number | Urutan manual |
 | `createdAt` | ISO datetime | Waktu dibuat |
 | `updatedAt` | ISO datetime | Waktu terakhir diubah |
-| `doneAt` | ISO datetime/null | Waktu selesai |
+| `doneAt` | ISO datetime/null | Waktu selesai; dipertahankan saat status berubah ke `Revisi`, lalu diperbarui saat selesai lagi |
 
 Data lama dimigrasikan otomatis saat aplikasi dimuat: `is_priority: true` menjadi `prioritas: "Urgent"`, divisi string menjadi array, dan field jadwal baru diberi nilai default. Karena `estimasiSelesai` selalu dihitung ulang dari `mulai + durasi`, jadwal lama yang sebelumnya melompati akhir pekan ikut disesuaikan otomatis.
 
@@ -180,6 +186,7 @@ src/
 │  ├─ FilterPanel.jsx
 │  ├─ RequestTable.jsx
 │  ├─ RequestDetail.jsx
+│  ├─ RevisionDialog.jsx
 │  ├─ ShiftImpactDialog.jsx
 │  ├─ ScheduleBadge.jsx
 │  ├─ Pagination.jsx

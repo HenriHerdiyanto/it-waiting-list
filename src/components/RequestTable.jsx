@@ -1,12 +1,13 @@
 import { useRef, useState } from 'react';
-import { PRIORITY, STATUS, TAB_DONE, TAB_PENDING } from '../constants';
-import { formatDateRange, formatDateTime } from '../utils/format';
+import { PRIORITY, STATUS, TAB_DONE, TAB_PENDING, TAB_REVISI } from '../constants';
+import { formatDateRange, formatDateTime, getDisplayDescription } from '../utils/format';
 import { roadmapProgress } from '../utils/roadmap';
 import ScheduleBadge, { PriorityBadge } from './ScheduleBadge';
 
 const STATUS_CLASS = {
   [STATUS.WAITING]: 'status-waiting',
   [STATUS.ON_PROGRESS]: 'status-proses',
+  [STATUS.REVISI]: 'status-revisi',
   [STATUS.PENDING]: 'status-pending',
   [STATUS.DONE]: 'status-done',
 };
@@ -29,6 +30,7 @@ export default function RequestTable({
   onEdit,
   onDelete,
   onReopen,
+  onRevise,
   onDetail,
 }) {
   const [dragState, setDragState] = useState({ id: null, overId: null });
@@ -37,15 +39,18 @@ export default function RequestTable({
   const start = (page - 1) * itemsPerPage;
   const pageItems = items.slice(start, start + itemsPerPage);
   const isDoneTab = tab === TAB_DONE;
+  const isRevisiTab = tab === TAB_REVISI;
   const isPendingTab = tab === TAB_PENDING;
   const columnCount = 6 + (isDoneTab ? 1 : 0) + (isLoggedIn ? 1 : 0);
   const dragEnabled = isLoggedIn && canReorder && !isDoneTab && !busy;
 
   const emptyMessage = isDoneTab
     ? 'Belum ada request yang selesai.'
-    : isPendingTab
-      ? 'Belum ada request yang pending.'
-      : 'Tidak ada request yang cocok dengan filter.';
+    : isRevisiTab
+      ? 'Belum ada request yang perlu revisi.'
+      : isPendingTab
+        ? 'Belum ada request yang pending.'
+        : 'Tidak ada request yang cocok dengan filter.';
 
   const reorderHint = canReorder
     ? 'Sudah di batas grup prioritas/status yang sama'
@@ -198,7 +203,7 @@ export default function RequestTable({
                     </div>
                   </td>
 
-                  <td className="cell-desc">{req.deskripsi || '-'}</td>
+                  <td className="cell-desc">{getDisplayDescription(req) || '-'}</td>
 
                   <td>{req.PIC || <span className="muted">—</span>}</td>
 
@@ -307,14 +312,24 @@ export default function RequestTable({
 
                         <div className="action-row">
                           {isDoneTab && (
-                            <button
-                              type="button"
-                              onClick={() => onReopen(req)}
-                              disabled={busy}
-                              className="btn-action btn-reopen"
-                            >
-                              ↩️ Buka
-                            </button>
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => onReopen(req)}
+                                disabled={busy}
+                                className="btn-action btn-reopen"
+                              >
+                                ↩️ Buka
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => onRevise(req)}
+                                disabled={busy}
+                                className="btn-action btn-revisi"
+                              >
+                                🔁 Revisi
+                              </button>
+                            </>
                           )}
 
                           <button

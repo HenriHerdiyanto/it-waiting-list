@@ -96,6 +96,11 @@ export default function RequestForm({ form, editing, saving, onChange, onSubmit,
                 </option>
               ))}
             </select>
+            {form.status === STATUS.REVISI && (
+              <small className="hint">
+                Tanggal selesai sebelumnya tetap tersimpan. Tanggal/roadmap tidak diubah otomatis.
+              </small>
+            )}
           </label>
         </div>
 
@@ -121,6 +126,22 @@ export default function RequestForm({ form, editing, saving, onChange, onSubmit,
             onChange={(event) => onChange('deskripsi', event.target.value)}
           />
         </label>
+
+        {form.status === STATUS.REVISI && (
+          <label className="field">
+            <span>Deskripsi Revisi *</span>
+            <textarea
+              rows={3}
+              placeholder="Jelaskan kesalahan atau perbaikan yang perlu dikerjakan"
+              required
+              value={form.deskripsiRevisi}
+              onChange={(event) => onChange('deskripsiRevisi', event.target.value)}
+            />
+            <small className="hint">
+              Deskripsi ini yang tampil ke user selama status masih Revisi.
+            </small>
+          </label>
+        )}
 
         <div className="form-grid">
           <label className="field">

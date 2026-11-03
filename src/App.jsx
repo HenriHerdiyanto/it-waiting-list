@@ -8,6 +8,7 @@ import Tabs from './components/Tabs';
 import FilterPanel from './components/FilterPanel';
 import RequestTable from './components/RequestTable';
 import RequestDetail from './components/RequestDetail';
+import RevisionDialog from './components/RevisionDialog';
 import ShiftImpactDialog from './components/ShiftImpactDialog';
 import Pagination from './components/Pagination';
 import ToastContainer from './components/ToastContainer';
@@ -25,6 +26,7 @@ import {
   TAB_ACTIVE,
   TAB_BY_STATUS,
   TAB_DONE,
+  TAB_REVISI,
 } from './constants';
 import {
   createRequest,
@@ -76,6 +78,10 @@ function validatePayload(payload) {
     return 'Nama requester dan deskripsi wajib diisi.';
   }
 
+  if (payload.status === STATUS.REVISI && !payload.deskripsiRevisi.trim()) {
+    return 'Deskripsi revisi wajib diisi saat status Revisi.';
+  }
+
   if (payload.status !== STATUS.DONE) {
     if (!payload.mulai) return 'Tanggal mulai wajib diisi untuk request aktif.';
     if (!payload.estimasiSelesai) {
@@ -106,6 +112,7 @@ export default function App() {
   const [busyId, setBusyId] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [detailId, setDetailId] = useState(null);
+  const [reviseTarget, setReviseTarget] = useState(null);
   const [shiftPreview, setShiftPreview] = useState(null);
 
   const [activeTab, setActiveTab] = useState(TAB_ACTIVE);
@@ -226,6 +233,7 @@ export default function App() {
       nama_orang_req: form.nama_orang_req.trim(),
       divisi: form.divisi,
       deskripsi: form.deskripsi,
+      deskripsiRevisi: String(form.deskripsiRevisi ?? '').trim(),
       PIC: form.PIC.trim(),
       status,
       prioritas,
@@ -247,7 +255,9 @@ export default function App() {
           ? previousWasDone
             ? existing.doneAt ?? now
             : now
-          : null,
+          : status === STATUS.REVISI
+            ? existing?.doneAt ?? null
+            : null,
     };
   };
 
@@ -427,6 +437,7 @@ export default function App() {
       nama_orang_req: req.nama_orang_req,
       divisi: [...req.divisi],
       deskripsi: req.deskripsi,
+      deskripsiRevisi: req.deskripsiRevisi ?? '',
       PIC: req.PIC,
       status: req.status,
       is_priority: req.is_priority,
@@ -665,6 +676,58 @@ export default function App() {
     }
   };
 
+  const handleRevise = async (req, deskripsiRevisi) => {
+    const previous = requests;
+    setBusyId(req.id);
+
+    try {
+      const saved = normalizeRequest(
+        await updateRequest(req.id, {
+          ...req,
+          status: STATUS.REVISI,
+          deskripsiRevisi,
+          doneAt: req.doneAt ?? null,
+          updatedAt: new Date().toISOString(),
+        }),
+        0,
+      );
+
+      setRequests((current) =>
+        sortRequests(
+          current.map((item) =>
+            String(item.id) === String(req.id) ? { ...saved, urutan: req.urutan } : item,
+          ),
+        ),
+      );
+
+      setActiveTab(TAB_REVISI);
+      setFilterStatus('Semua');
+      setCurrentPage(1);
+      notify('Request dipindahkan ke tab Revisi.');
+    } catch (error) {
+      setRequests(previous);
+      notify(error.message || 'Gagal mengubah status ke Revisi.', 'error');
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const handleReviseClick = (req) => {
+    setReviseTarget(req);
+  };
+
+  const handleConfirmRevise = async (deskripsiRevisi) => {
+    const target = reviseTarget;
+    if (!target) return;
+
+    setReviseTarget(null);
+    await handleRevise(target, deskripsiRevisi);
+  };
+
+  const handleCancelRevise = () => {
+    setReviseTarget(null);
+  };
+
   const handleTabChange = (tab) => {
     setActiveTab(tab);
     setFilterStatus('Semua');
@@ -699,6 +762,7 @@ export default function App() {
     active: requests.filter(
       (item) => item.status === STATUS.ON_PROGRESS || item.status === STATUS.WAITING,
     ).length,
+    revisi: requests.filter((item) => item.status === STATUS.REVISI).length,
     pending: requests.filter((item) => item.status === STATUS.PENDING).length,
     done: requests.filter((item) => item.status === STATUS.DONE).length,
   };
@@ -808,6 +872,7 @@ export default function App() {
             onEdit={handleEditClick}
             onDelete={setDeleteTarget}
             onReopen={handleReopen}
+            onRevise={handleReviseClick}
             onDetail={(req) => setDetailId(req.id)}
           />
 
@@ -845,6 +910,16 @@ export default function App() {
           busy={saving}
           onConfirm={handleConfirmShift}
           onCancel={handleCancelShift}
+        />
+      )}
+
+      {reviseTarget && (
+        <RevisionDialog
+          key={reviseTarget.id}
+          request={reviseTarget}
+          busy={Boolean(busyId) || saving}
+          onConfirm={handleConfirmRevise}
+          onCancel={handleCancelRevise}
         />
       )}
 

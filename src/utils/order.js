@@ -11,6 +11,7 @@ import {
   TAB_ACTIVE,
   TAB_DONE,
   TAB_PENDING,
+  TAB_REVISI,
 } from '../constants';
 import {
   calculateEndDate,
@@ -33,7 +34,7 @@ function compareIds(a, b) {
 /**
  * Aturan urut final:
  * 1. Level prioritas: Urgent -> Tinggi -> Normal
- * 2. Status: On Proses -> Waiting -> Pending -> Done
+ * 2. Status: On Proses -> Waiting -> Revisi -> Pending -> Done
  * 3. urutan manual (unik 1..N)
  * 4. createdAt lalu id sebagai tie-breaker agar selalu stabil
  */
@@ -64,6 +65,9 @@ export function sortRequests(list) {
 export function normalizeStatus(value) {
   const status = String(value ?? '').trim().toLowerCase();
   if (['done', 'selesai', 'complete', 'completed'].includes(status)) return STATUS.DONE;
+  if (['revisi', 'revision', 'perbaikan', 'revisi ulang'].includes(status)) {
+    return STATUS.REVISI;
+  }
   if (['pending', 'tertunda', 'ditunda'].includes(status)) return STATUS.PENDING;
   if (['on proses', 'on process', 'proses', 'in progress', 'progress'].includes(status)) {
     return STATUS.ON_PROGRESS;
@@ -165,6 +169,7 @@ export function normalizeRequest(item = {}, index = 0) {
     nama_orang_req: String(item.nama_orang_req ?? '').trim(),
     divisi: normalizeDivisi(item.divisi),
     deskripsi: String(item.deskripsi ?? ''),
+    deskripsiRevisi: String(item.deskripsiRevisi ?? ''),
     PIC: String(item.PIC ?? '').trim(),
     status,
     prioritas,
@@ -195,7 +200,12 @@ export function normalizeRequest(item = {}, index = 0) {
     urutan: Number.isFinite(parsedOrder) ? parsedOrder : null,
     createdAt: item.createdAt ?? null,
     updatedAt: item.updatedAt ?? null,
-    doneAt: status === STATUS.DONE ? (item.doneAt ?? item.createdAt ?? null) : null,
+    doneAt:
+      status === STATUS.DONE
+        ? (item.doneAt ?? item.createdAt ?? null)
+        : status === STATUS.REVISI
+          ? (item.doneAt ?? null)
+          : null,
   };
 }
 
@@ -348,6 +358,7 @@ export function buildMoveTo(list, sourceId, targetId) {
 /** Status yang ditampilkan pada masing-masing tab. */
 function belongsToTab(item, tab) {
   if (tab === TAB_DONE) return item.status === STATUS.DONE;
+  if (tab === TAB_REVISI) return item.status === STATUS.REVISI;
   if (tab === TAB_PENDING) return item.status === STATUS.PENDING;
   return item.status === STATUS.ON_PROGRESS || item.status === STATUS.WAITING;
 }
@@ -400,6 +411,7 @@ export function filterRequests(
     const searchable = [
       item.nama_orang_req,
       item.deskripsi,
+      item.deskripsiRevisi,
       item.PIC,
       item.alasanPrioritas,
       item.alasanTergeser,

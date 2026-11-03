@@ -1,3 +1,4 @@
+import { STATUS } from '../constants';
 import { coerceDateKey, parseDateKey } from './date';
 import { roadmapProgress } from './roadmap';
 import { getScheduleStatus } from './schedule';
@@ -7,6 +8,7 @@ const CSV_HEADERS = [
   'Nama',
   'Divisi',
   'Deskripsi',
+  'Deskripsi Revisi',
   'PIC',
   'Prioritas',
   'Alasan Prioritas',
@@ -37,6 +39,19 @@ function csvCell(value) {
   return `"${String(value ?? '').replaceAll('"', '""')}"`;
 }
 
+/**
+ * Deskripsi yang ditampilkan ke user.
+ * Saat status Revisi, pakai deskripsi revisi; selain itu pakai deskripsi lama.
+ */
+export function getDisplayDescription(item) {
+  if (!item) return '';
+
+  const revisi = String(item.deskripsiRevisi ?? '').trim();
+  if (item.status === STATUS.REVISI && revisi) return revisi;
+
+  return String(item.deskripsi ?? '');
+}
+
 export function requestsToCsv(items, offset = 0, allRequests = []) {
   const byId = new Map(allRequests.map((item) => [String(item.id), item]));
 
@@ -51,6 +66,7 @@ export function requestsToCsv(items, offset = 0, allRequests = []) {
       item.nama_orang_req,
       item.divisi.length > 0 ? item.divisi.join('; ') : 'Management',
       item.deskripsi,
+      item.deskripsiRevisi,
       item.PIC,
       item.prioritas,
       item.alasanPrioritas,
