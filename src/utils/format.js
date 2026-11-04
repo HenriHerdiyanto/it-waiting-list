@@ -1,5 +1,6 @@
 import { STATUS } from '../constants';
 import { coerceDateKey, parseDateKey } from './date';
+import { formatPicNames } from './pic';
 import { roadmapProgress } from './roadmap';
 import { getScheduleStatus } from './schedule';
 
@@ -67,7 +68,7 @@ export function requestsToCsv(items, offset = 0, allRequests = []) {
       item.divisi.length > 0 ? item.divisi.join('; ') : 'Management',
       item.deskripsi,
       item.deskripsiRevisi,
-      item.PIC,
+      formatPicNames(item.PIC, '; '),
       item.prioritas,
       item.alasanPrioritas,
       item.status,

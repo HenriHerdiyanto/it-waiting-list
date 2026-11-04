@@ -20,6 +20,10 @@ import {
   normalizeStart,
 } from './date';
 import { normalizeRoadmap } from './roadmap';
+import {
+  isCanonicalPicArray,
+  normalizePicNames,
+} from './pic';
 import { getScheduleStatus } from './schedule';
 
 const NO_ORDER = Number.MAX_SAFE_INTEGER;
@@ -170,7 +174,7 @@ export function normalizeRequest(item = {}, index = 0) {
     divisi: normalizeDivisi(item.divisi),
     deskripsi: String(item.deskripsi ?? ''),
     deskripsiRevisi: String(item.deskripsiRevisi ?? ''),
-    PIC: String(item.PIC ?? '').trim(),
+    PIC: normalizePicNames(item.PIC),
     status,
     prioritas,
     is_priority: prioritas !== PRIORITY.NORMAL,
@@ -242,7 +246,8 @@ function hasMigrationChanges(original, item) {
     coerceDateKey(original.estimasiSelesai) !== item.estimasiSelesai ||
     String(original.tergeserOleh ?? '') !== String(item.tergeserOleh ?? '') ||
     String(original.alasanTergeser ?? '') !== String(item.alasanTergeser ?? '') ||
-    Number(original.jumlahTergeser || 0) !== item.jumlahTergeser
+    Number(original.jumlahTergeser || 0) !== item.jumlahTergeser ||
+    !isCanonicalPicArray(original.PIC)
   ) {
     return true;
   }
@@ -412,7 +417,7 @@ export function filterRequests(
       item.nama_orang_req,
       item.deskripsi,
       item.deskripsiRevisi,
-      item.PIC,
+      ...normalizePicNames(item.PIC),
       item.alasanPrioritas,
       item.alasanTergeser,
       item.status,

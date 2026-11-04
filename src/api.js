@@ -1,6 +1,6 @@
-import { API_URL } from './config';
+import { API_URL, PICS_API_URL } from './config';
 
-async function request(path = '', options = {}) {
+async function request(url, options = {}) {
   const config = {
     ...options,
     headers: {
@@ -9,7 +9,7 @@ async function request(path = '', options = {}) {
     },
   };
 
-  const response = await fetch(`${API_URL}${path}`, config);
+  const response = await fetch(url, config);
 
   if (!response.ok) {
     let detail = '';
@@ -27,15 +27,16 @@ async function request(path = '', options = {}) {
   return text ? JSON.parse(text) : null;
 }
 
-export const fetchRequests = () => request();
+export const fetchRequests = () => request(API_URL);
 
 export const createRequest = (payload) =>
-  request('', { method: 'POST', body: JSON.stringify(payload) });
+  request(API_URL, { method: 'POST', body: JSON.stringify(payload) });
 
 export const updateRequest = (id, payload) =>
-  request(`/${id}`, { method: 'PUT', body: JSON.stringify(payload) });
+  request(`${API_URL}/${id}`, { method: 'PUT', body: JSON.stringify(payload) });
 
-export const deleteRequest = (id) => request(`/${id}`, { method: 'DELETE' });
+export const deleteRequest = (id) =>
+  request(`${API_URL}/${id}`, { method: 'DELETE' });
 
 /**
  * Menyimpan banyak perubahan sekaligus (urutan dan penambahan keterangan bentrok).
@@ -57,3 +58,16 @@ export async function saveBatch(items) {
 
 // Alias lama agar pemanggil yang sudah ada tetap berjalan.
 export const saveOrderChanges = saveBatch;
+
+/* ------------------------------- Master PIC ------------------------------- */
+
+export const fetchPics = () => request(PICS_API_URL);
+
+export const createPic = (payload) =>
+  request(PICS_API_URL, { method: 'POST', body: JSON.stringify(payload) });
+
+export const updatePic = (id, payload) =>
+  request(`${PICS_API_URL}/${id}`, { method: 'PUT', body: JSON.stringify(payload) });
+
+export const deletePic = (id) =>
+  request(`${PICS_API_URL}/${id}`, { method: 'DELETE' });

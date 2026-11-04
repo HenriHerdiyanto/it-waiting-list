@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { STATUS } from '../constants';
 import { formatDate, formatDateRange, formatDateTime, getDisplayDescription } from '../utils/format';
+import { formatPicNames } from '../utils/pic';
 import { getOverdueDays, getScheduleStatus } from '../utils/schedule';
 import { roadmapProgress } from '../utils/roadmap';
 import { PriorityBadge } from './ScheduleBadge';
@@ -50,6 +51,7 @@ export default function RequestDetail({ request, busy, isLoggedIn, onClose, onTo
   const overdueDays = getOverdueDays(request);
   const isRevisi = request.status === STATUS.REVISI;
   const displayDescription = getDisplayDescription(request);
+  const picLabel = formatPicNames(request.PIC);
   const hasDifferentOriginal =
     isRevisi && String(request.deskripsi ?? '').trim() !== displayDescription.trim();
 
@@ -68,7 +70,7 @@ export default function RequestDetail({ request, busy, isLoggedIn, onClose, onTo
             <h3 id="detail-title">{request.nama_orang_req || '(tanpa nama)'}</h3>
             <p className="hint">
               {request.divisi.length > 0 ? request.divisi.join(', ') : 'Management'}
-              {request.PIC ? ` · PIC ${request.PIC}` : ''}
+              {picLabel ? ` · PIC ${picLabel}` : ''}
             </p>
           </div>
           <button type="button" className="modal-close" onClick={onClose} aria-label="Tutup">

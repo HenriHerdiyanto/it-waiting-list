@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { PRIORITY, STATUS, TAB_DONE, TAB_PENDING, TAB_REVISI } from '../constants';
 import { formatDateRange, formatDateTime, getDisplayDescription } from '../utils/format';
+import { normalizePicNames } from '../utils/pic';
 import { roadmapProgress } from '../utils/roadmap';
 import ScheduleBadge, { PriorityBadge } from './ScheduleBadge';
 
@@ -128,6 +129,7 @@ export default function RequestTable({
               const canMoveUp = canReorder && sameGroup(previous, req);
               const canMoveDown = canReorder && sameGroup(next, req);
               const progress = roadmapProgress(req.roadmap);
+              const picNames = normalizePicNames(req.PIC);
 
               const rowClass = [
                 req.prioritas === PRIORITY.URGENT
@@ -205,7 +207,19 @@ export default function RequestTable({
 
                   <td className="cell-desc">{getDisplayDescription(req) || '-'}</td>
 
-                  <td>{req.PIC || <span className="muted">—</span>}</td>
+                  <td className="cell-pic">
+                    {picNames.length > 0 ? (
+                      <div className="pic-badges">
+                        {picNames.map((nama) => (
+                          <span className="pic-name-badge" key={nama}>
+                            {nama}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <span className="muted">—</span>
+                    )}
+                  </td>
 
                   <td className="cell-schedule">
                     <div className="schedule-cell">

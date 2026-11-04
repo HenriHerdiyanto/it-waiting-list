@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   PRIORITY,
   PRIORITY_OPTIONS,
@@ -12,9 +13,18 @@ import { calculateEndDate, normalizeStart } from '../utils/date';
 import { balanceRoadmap, syncRoadmapDates } from '../utils/roadmap';
 import { formatDate } from '../utils/format';
 import DivisiPicker from './DivisiPicker';
+import PicPicker from './PicPicker';
 import RoadmapEditor from './RoadmapEditor';
 
-export default function RequestForm({ form, editing, saving, onChange, onSubmit, onCancel }) {
+export default function RequestForm({
+  form,
+  editing,
+  saving,
+  picOptions = [],
+  onChange,
+  onSubmit,
+  onCancel,
+}) {
   const duration = Math.max(1, Math.floor(Number(form.durasiHari) || 1));
   const isUrgent = form.prioritas === PRIORITY.URGENT;
   const [durationInput, setDurationInput] = useState(() => String(duration));
@@ -143,31 +153,33 @@ export default function RequestForm({ form, editing, saving, onChange, onSubmit,
           </label>
         )}
 
-        <div className="form-grid">
-          <label className="field">
-            <span>PIC</span>
-            <input
-              type="text"
-              placeholder="Nama PIC (opsional)"
-              value={form.PIC}
-              onChange={(event) => onChange('PIC', event.target.value)}
-            />
-          </label>
-
-          <label className="field">
-            <span>Level Prioritas</span>
-            <select
-              value={form.prioritas}
-              onChange={(event) => onChange('prioritas', event.target.value)}
-            >
-              {PRIORITY_OPTIONS.map((prioritas) => (
-                <option key={prioritas} value={prioritas}>
-                  {prioritas}
-                </option>
-              ))}
-            </select>
-          </label>
+        <div className="field field-full">
+          <span>PIC</span>
+          <PicPicker
+            value={form.PIC}
+            options={picOptions}
+            disabled={saving}
+            onChange={(value) => onChange('PIC', value)}
+          />
+          <small className="hint">
+            Bisa pilih lebih dari satu PIC. PIC dikelola di halaman{' '}
+            <Link to="/admin/pic">Master PIC</Link>.
+          </small>
         </div>
+
+        <label className="field">
+          <span>Level Prioritas</span>
+          <select
+            value={form.prioritas}
+            onChange={(event) => onChange('prioritas', event.target.value)}
+          >
+            {PRIORITY_OPTIONS.map((prioritas) => (
+              <option key={prioritas} value={prioritas}>
+                {prioritas}
+              </option>
+            ))}
+          </select>
+        </label>
       </section>
 
       <section className="form-section">

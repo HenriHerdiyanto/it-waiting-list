@@ -12,6 +12,7 @@ import {
   rangesOverlap,
   todayKey,
 } from './date';
+import { normalizePicNames, picsOverlap } from './pic';
 
 function isActive(item) {
   return item && item.status !== STATUS.DONE;
@@ -32,9 +33,7 @@ function intersectsDivisi(a, b) {
 }
 
 function samePic(a, b) {
-  const left = String(a?.PIC ?? '').trim().toLowerCase();
-  const right = String(b?.PIC ?? '').trim().toLowerCase();
-  return left !== '' && left === right;
+  return picsOverlap(a?.PIC, b?.PIC);
 }
 
 export function getScheduleStatus(item, today = todayKey()) {
@@ -91,7 +90,7 @@ export function findOverlapCandidates(requests, urgent, { scope = SHIFT_SCOPE.AL
       if (scope === SHIFT_SCOPE.DIVISI) return intersectsDivisi(urgent, item);
 
       if (scope === SHIFT_SCOPE.PIC) {
-        if (String(urgent?.PIC ?? '').trim() === '') {
+        if (normalizePicNames(urgent?.PIC).length === 0) {
           return intersectsDivisi(urgent, item);
         }
         return samePic(urgent, item);

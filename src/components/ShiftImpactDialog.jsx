@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { formatDateRange } from '../utils/format';
+import { formatPicNames } from '../utils/pic';
 import { buildNotePlan, defaultNoteText } from '../utils/schedule';
 import { PriorityBadge } from './ScheduleBadge';
 
@@ -96,7 +97,9 @@ export default function ShiftImpactDialog({
                         <strong>{item.nama_orang_req || '(tanpa nama)'}</strong>
                         <span className="shift-item-meta">
                           {item.divisi.length > 0 ? item.divisi.join(', ') : 'Management'}
-                          {item.PIC ? ` · PIC ${item.PIC}` : ''}
+                          {item.PIC.length > 0
+                            ? ` · PIC ${formatPicNames(item.PIC)}`
+                            : ''}
                         </span>
                       </span>
                     </label>

@@ -25,6 +25,14 @@ export const STATUS_WEIGHT = {
 
 export const DIVISI_OPTIONS = ['Rapspoint', 'Vender', 'Barapoint', 'FMI', 'Aoshi', 'Station'];
 
+export const PIC_ROLES = ['FE', 'BE', 'KADIV'];
+
+export const PIC_ROLE_DESCRIPTION = {
+  FE: 'Frontend',
+  BE: 'Backend',
+  KADIV: 'Kepala Divisi',
+};
+
 export const PRIORITY = {
   NORMAL: 'Normal',
   HIGH: 'Tinggi',
@@ -103,7 +111,7 @@ export const EMPTY_FORM = {
   divisi: [],
   deskripsi: '',
   deskripsiRevisi: '',
-  PIC: '',
+  PIC: [],
   status: STATUS.WAITING,
   is_priority: false,
   prioritas: PRIORITY.NORMAL,

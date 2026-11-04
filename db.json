@@ -5,7 +5,7 @@
       "nama_orang_req": "Farhan",
       "divisi": ["Aoshi"],
       "deskripsi": "Server ERP down, produksi berhenti. Perlu perbaikan segera.",
-      "PIC": "Bima",
+      "PIC": ["Bima", "Sinta"],
       "status": "On Proses",
       "prioritas": "Urgent",
       "is_priority": true,
@@ -61,7 +61,7 @@
       "nama_orang_req": "Andi",
       "divisi": ["FMI"],
       "deskripsi": "Update aplikasi stok gudang ke versi terbaru.",
-      "PIC": "Rizal",
+      "PIC": ["Rizal"],
       "status": "Waiting",
       "prioritas": "Normal",
       "is_priority": false,
@@ -126,7 +126,7 @@
       "nama_orang_req": "Sari",
       "divisi": ["Station"],
       "deskripsi": "Printer kasir tidak bisa mencetak struk.",
-      "PIC": "Rizal",
+      "PIC": ["Rizal"],
       "status": "Waiting",
       "prioritas": "Normal",
       "is_priority": false,
@@ -182,7 +182,7 @@
       "nama_orang_req": "Rina",
       "divisi": ["Rapspoint"],
       "deskripsi": "Permintaan akun baru untuk staf administrasi.",
-      "PIC": "Bima",
+      "PIC": ["Bima"],
       "status": "Pending",
       "prioritas": "Tinggi",
       "is_priority": true,
@@ -220,7 +220,7 @@
       "nama_orang_req": "Dedi",
       "divisi": ["Vender"],
       "deskripsi": "Install ulang laptop kasir yang lemot.",
-      "PIC": "Rizal",
+      "PIC": ["Rizal"],
       "status": "Done",
       "prioritas": "Normal",
       "is_priority": false,
@@ -261,6 +261,36 @@
       "createdAt": "2026-10-27T02:00:00.000Z",
       "updatedAt": "2026-10-29T09:00:00.000Z",
       "doneAt": "2026-10-29T09:00:00.000Z"
+    }
+  ],
+  "pics": [
+    {
+      "id": 1,
+      "nama": "Bima",
+      "role": "BE",
+      "createdAt": "2026-10-20T02:00:00.000Z",
+      "updatedAt": "2026-10-20T02:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "nama": "Rizal",
+      "role": "BE",
+      "createdAt": "2026-10-20T02:00:00.000Z",
+      "updatedAt": "2026-10-20T02:00:00.000Z"
+    },
+    {
+      "id": 3,
+      "nama": "Sinta",
+      "role": "FE",
+      "createdAt": "2026-10-20T02:00:00.000Z",
+      "updatedAt": "2026-10-20T02:00:00.000Z"
+    },
+    {
+      "id": 4,
+      "nama": "Raka",
+      "role": "KADIV",
+      "createdAt": "2026-10-20T02:00:00.000Z",
+      "updatedAt": "2026-10-20T02:00:00.000Z"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"

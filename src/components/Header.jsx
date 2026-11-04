@@ -1,4 +1,6 @@
-export default function Header({ isLoggedIn, showLoginForm, onToggleLogin, onLogout }) {
+import { Link } from 'react-router-dom';
+
+export default function Header({ isLoggedIn = false }) {
   return (
     <header className="app-header">
       <div>
@@ -8,13 +10,13 @@ export default function Header({ isLoggedIn, showLoginForm, onToggleLogin, onLog
 
       <div className="header-actions">
         {isLoggedIn ? (
-          <button type="button" onClick={onLogout} className="btn btn-danger">
-            Logout
-          </button>
+          <Link to="/dashboard" className="btn btn-primary">
+            Buka Dashboard
+          </Link>
         ) : (
-          <button type="button" onClick={onToggleLogin} className="btn btn-primary">
-            {showLoginForm ? 'Batal' : 'Login Admin'}
-          </button>
+          <Link to="/login" className="btn btn-primary">
+            Login Admin
+          </Link>
         )}
       </div>
     </header>

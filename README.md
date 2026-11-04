@@ -21,7 +21,27 @@ Aplikasi web untuk mencatat, memantau, menjadwalkan, dan mengurutkan request/per
 - **Pencarian** — nama, deskripsi awal, deskripsi revisi, PIC, divisi, alasan prioritas/keterangan bentrok, dan judul roadmap.
 - **Export CSV** — seluruh kolom jadwal, progres, keterangan bentrok, serta deskripsi awal dan deskripsi revisi.
 - **Panel admin** — tambah, edit, hapus, ubah prioritas, atur roadmap, dan buka kembali request selesai.
+- **Dashboard admin** — kartu statistik (Aktif, Revisi, Pending, Selesai, Urgent, Terlambat), daftar "Perlu Perhatian", jadwal terdekat, distribusi divisi, ringkasan PIC per role, dan request terbaru.
+- **Master PIC** — CRUD PIC terpisah dengan role `FE`, `BE`, atau `KADIV`; form request memakai **checkbox multi-PIC** sehingga satu request bisa ditangani lebih dari satu orang. PIC yang masih dipakai request tidak bisa dihapus, dan mengganti nama PIC otomatis menyelaraskan data request terkait.
+- **Halaman terpisah dengan URL asli** — login, dashboard, daftar request, serta form tambah/edit request dan PIC masing-masing punya rute sendiri (bisa di-refresh dan dibagikan tautannya).
+- **Halaman publik read-only** — daftar request tetap bisa diakses tanpa login untuk melihat detail; seluruh aksi pengelolaan hanya muncul setelah login admin.
 - **Notifikasi toast, loading skeleton, dan error state**.
+
+## Halaman & Rute
+
+| Rute | Akses | Fungsi |
+| --- | --- | --- |
+| `/` | Publik | Daftar request read-only, filter, dan detail drawer |
+| `/login` | Publik | Login admin |
+| `/dashboard` | Admin | Ringkasan statistik dan panel monitoring |
+| `/admin/waiting-list` | Admin | Kelola request (tabs, filter, urutan, aksi) |
+| `/admin/waiting-list/new` | Admin | Form tambah request |
+| `/admin/waiting-list/:id/edit` | Admin | Form edit request |
+| `/admin/pic` | Admin | Daftar master PIC |
+| `/admin/pic/new` | Admin | Form tambah PIC |
+| `/admin/pic/:id/edit` | Admin | Form edit PIC |
+
+Rute admin dijaga oleh `RequireAuth`; pengunjung yang belum login akan diarahkan ke `/login?next=...` lalu dikembalikan ke halaman tujuan setelah berhasil masuk.
 
 ## Status & Tab
 
@@ -91,7 +111,7 @@ Tombol Naik/Turun dan drag & drop hanya menggeser request **di dalam grup priori
 | `divisi` | string[] | Bisa lebih dari satu |
 | `deskripsi` | string | Deskripsi masalah awal |
 | `deskripsiRevisi` | string | Deskripsi kesalahan/perbaikan; wajib saat status `Revisi` dan yang ditampilkan ke user |
-| `PIC` | string | Penanggung jawab |
+| `PIC` | string[] | Daftar penanggung jawab; bisa lebih dari satu |
 | `status` | enum | `On Proses`, `Waiting`, `Revisi`, `Pending`, `Done` |
 | `prioritas` | enum | `Normal`, `Tinggi`, `Urgent` |
 | `is_priority` | boolean | Kompatibilitas data lama; true jika prioritas bukan Normal |
@@ -114,7 +134,23 @@ Tombol Naik/Turun dan drag & drop hanya menggeser request **di dalam grup priori
 | `updatedAt` | ISO datetime | Waktu terakhir diubah |
 | `doneAt` | ISO datetime/null | Waktu selesai; dipertahankan saat status berubah ke `Revisi`, lalu diperbarui saat selesai lagi |
 
-Data lama dimigrasikan otomatis saat aplikasi dimuat: `is_priority: true` menjadi `prioritas: "Urgent"`, divisi string menjadi array, dan field jadwal baru diberi nilai default. Karena `estimasiSelesai` selalu dihitung ulang dari `mulai + durasi`, jadwal lama yang sebelumnya melompati akhir pekan ikut disesuaikan otomatis.
+Data lama dimigrasikan otomatis saat aplikasi dimuat: `is_priority: true` menjadi `prioritas: "Urgent"`, divisi string menjadi array, PIC string menjadi `string[]`, dan field jadwal baru diberi nilai default. Karena `estimasiSelesai` selalu dihitung ulang dari `mulai + durasi`, jadwal lama yang sebelumnya melompati akhir pekan ikut disesuaikan otomatis.
+
+## Master PIC
+
+PIC disimpan pada resource terpisah (`pics`) dengan skema minimal:
+
+| Field | Tipe | Keterangan |
+| --- | --- | --- |
+| `id` | number/string | ID dari API atau ID lokal |
+| `nama` | string | Nama unik PIC |
+| `role` | enum | `FE` (Frontend), `BE` (Backend), atau `KADIV` (Kepala Divisi) |
+| `createdAt` | ISO datetime | Waktu dibuat |
+| `updatedAt` | ISO datetime | Waktu terakhir diubah |
+
+Field `PIC` pada request berupa **array nama** agar satu request bisa ditangani beberapa PIC. Form request menampilkan checkbox yang dikelompokkan per role dan tetap mempertahankan nilai PIC lama yang belum terdaftar di master. Data lama yang masih berupa string (termasuk dipisah koma) otomatis dinormalisasi menjadi array saat aplikasi dimuat.
+
+Jika endpoint PIC tidak tersedia (misalnya resource `pics` belum dibuat di MockAPI), aplikasi otomatis beralih ke **mode penyimpanan lokal** memakai `localStorage` (`itwl:pics:v1`). Banner informasi akan muncul di halaman Master PIC, dan tombol **Import dari Request** membantu mengisi master dari nama PIC yang sudah ada.
 
 ## Perhitungan Tanggal
 
@@ -140,15 +176,20 @@ Salin `.env.example` menjadi `.env`, lalu sesuaikan:
 
 ```env
 VITE_API_URL=https://6ae305fe933120ae20f80e32.mockapi.io/requests
+VITE_PIC_API_URL=
 VITE_ADMIN_USER=admin
 VITE_ADMIN_PASS=admin123
 ```
+
+`VITE_PIC_API_URL` boleh dikosongkan; aplikasi akan menurunkan alamatnya dari `VITE_API_URL` dengan mengganti `/requests` menjadi `/pics`. Isi variabel ini jika master PIC berada di endpoint yang berbeda.
 
 Ingin memakai json-server lokal? Jalankan `npm run server` (port `3001`), lalu set:
 
 ```env
 VITE_API_URL=http://localhost:3001/requests
 ```
+
+`db.json` sudah menyertakan koleksi `requests` dan `pics`, sehingga mode lokal langsung berjalan untuk keduanya.
 
 ## Script
 
@@ -164,22 +205,44 @@ VITE_API_URL=http://localhost:3001/requests
 
 ```
 src/
-├─ App.jsx                    # Orkestrasi state, tab, aksi, preview keterangan bentrok
-├─ api.js                     # Wrapper fetch + CRUD + batch save
-├─ config.js                  # API URL & kredensial dari env
-├─ constants.js               # Status, prioritas, divisi
+├─ App.jsx                    # Router + komposisi provider
+├─ api.js                     # Wrapper fetch + CRUD request & PIC + batch save
+├─ config.js                  # API URL, URL PIC, & kredensial dari env
+├─ constants.js               # Status, prioritas, divisi, role PIC
+├─ contexts/
+│  ├─ AuthContext.jsx         # Status login admin
+│  ├─ DataContext.jsx         # State & aksi request + master PIC
+│  └─ ToastContext.jsx        # Notifikasi global
 ├─ hooks/
 │  └─ useToast.js
+├─ layouts/
+│  └─ DashboardLayout.jsx     # Shell sidebar/topbar admin
+├─ routes/
+│  └─ RequireAuth.jsx         # Guard rute admin
+├─ pages/
+│  ├─ PublicListPage.jsx
+│  ├─ LoginPage.jsx
+│  ├─ DashboardPage.jsx
+│  ├─ WaitingListPage.jsx
+│  ├─ RequestFormPage.jsx
+│  ├─ PicListPage.jsx
+│  └─ PicFormPage.jsx
+├─ services/
+│  └─ picStore.js             # Master PIC via API + fallback localStorage
 ├─ utils/
 │  ├─ date.js                 # Utilitas tanggal kalender & overlap
 │  ├─ schedule.js             # Kesehatan jadwal & rencana keterangan bentrok
 │  ├─ roadmap.js              # Generate, sinkronisasi, validasi roadmap
 │  ├─ order.js                # Normalisasi, sorting, filter, perpindahan
+│  ├─ pic.js                  # Normalisasi & operasi multi-PIC
+│  ├─ requestPayload.js       # Form request <-> payload + validasi
 │  └─ format.js               # Format tanggal & export CSV
 ├─ components/
 │  ├─ Header.jsx
 │  ├─ LoginForm.jsx
+│  ├─ RequestsExplorer.jsx    # Daftar request bersama (publik & admin)
 │  ├─ RequestForm.jsx
+│  ├─ PicPicker.jsx           # Checkbox multi-PIC per role
 │  ├─ RoadmapEditor.jsx
 │  ├─ DivisiPicker.jsx
 │  ├─ Tabs.jsx
@@ -189,11 +252,13 @@ src/
 │  ├─ RevisionDialog.jsx
 │  ├─ ShiftImpactDialog.jsx
 │  ├─ ScheduleBadge.jsx
+│  ├─ StatCard.jsx
 │  ├─ Pagination.jsx
 │  ├─ ConfirmDialog.jsx
 │  ├─ ToastContainer.jsx
 │  └─ Feedback.jsx
 ├─ App.css
+├─ dashboard.css              # Styling dashboard, login, & master PIC
 └─ index.css
 ```
 
