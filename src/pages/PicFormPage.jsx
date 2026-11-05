@@ -3,8 +3,8 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { LoadingState } from '../components/Feedback';
 import { useData } from '../contexts/DataContext';
 import { useToastContext } from '../contexts/ToastContext';
-import { PIC_ROLES, PIC_ROLE_DESCRIPTION } from '../constants';
-import { hasPic } from '../utils/pic';
+import { PIC_ROLES, PIC_ROLE_DESCRIPTION, PIC_ROLE_DETAIL } from '../constants';
+import { hasPic, picRoleClass } from '../utils/pic';
 
 function PicFormScreen({ existing }) {
   const {
@@ -113,18 +113,12 @@ function PicFormScreen({ existing }) {
                   disabled={picBusy}
                   onClick={() => setRole(option)}
                 >
-                  <span className={`role-badge role-${option.toLowerCase()}`}>
+                  <span className={`role-badge ${picRoleClass(option)}`}>
                     {option}
                   </span>
                   <span>
                     <strong>{PIC_ROLE_DESCRIPTION[option]}</strong>
-                    <small>
-                      {option === 'FE'
-                        ? 'Frontend Developer'
-                        : option === 'BE'
-                          ? 'Backend Developer'
-                          : 'Kepala Divisi'}
-                    </small>
+                    <small>{PIC_ROLE_DETAIL[option]}</small>
                   </span>
                 </button>
               ))}

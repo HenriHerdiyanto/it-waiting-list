@@ -758,6 +758,16 @@
   color: #b45309;
 }
 
+.role-dba {
+  background: #ccfbf1;
+  color: #0f766e;
+}
+
+.role-uiux {
+  background: #fce7f3;
+  color: #be185d;
+}
+
 .role-other {
   background: #f1f5f9;
   color: #475569;

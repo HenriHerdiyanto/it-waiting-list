@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import './App.css';
 import './dashboard.css';
+import './analytics.css';
 
 import { AuthProvider } from './contexts/AuthContext';
 import { ToastProvider } from './contexts/ToastContext';
@@ -14,6 +15,7 @@ import WaitingListPage from './pages/WaitingListPage';
 import RequestFormPage from './pages/RequestFormPage';
 import PicListPage from './pages/PicListPage';
 import PicFormPage from './pages/PicFormPage';
+import PicStatsPage from './pages/PicStatsPage';
 
 export default function App() {
   return (
@@ -40,6 +42,7 @@ export default function App() {
                   <Route path="/admin/pic" element={<PicListPage />} />
                   <Route path="/admin/pic/new" element={<PicFormPage />} />
                   <Route path="/admin/pic/:id/edit" element={<PicFormPage />} />
+                  <Route path="/admin/statistik-pic" element={<PicStatsPage />} />
                 </Route>
               </Route>
 

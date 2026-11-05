@@ -1,9 +1,5 @@
 import { PIC_ROLES, PIC_ROLE_DESCRIPTION } from '../constants';
-import { normalizePicNames } from '../utils/pic';
-
-function roleClass(role) {
-  return PIC_ROLES.includes(role) ? `role-${role.toLowerCase()}` : 'role-other';
-}
+import { normalizePicNames, picRoleClass } from '../utils/pic';
 
 export default function PicPicker({
   value = [],
@@ -48,7 +44,7 @@ export default function PicPicker({
         <span className="pic-option-text">
           <strong>{nama}</strong>
           {role ? (
-            <span className={`role-badge ${roleClass(role)}`}>{role}</span>
+            <span className={`role-badge ${picRoleClass(role)}`}>{role}</span>
           ) : (
             <span className="pic-option-note">data lama</span>
           )}
@@ -93,7 +89,7 @@ export default function PicPicker({
           return (
             <fieldset className="pic-group" key={role} disabled={disabled}>
               <legend>
-                <span className={`role-badge ${roleClass(role)}`}>{role}</span>
+                <span className={`role-badge ${picRoleClass(role)}`}>{role}</span>
                 {PIC_ROLE_DESCRIPTION[role]}
               </legend>
               <div className="pic-options">

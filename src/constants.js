@@ -25,12 +25,22 @@ export const STATUS_WEIGHT = {
 
 export const DIVISI_OPTIONS = ['Rapspoint', 'Vender', 'Barapoint', 'FMI', 'Aoshi', 'Station'];
 
-export const PIC_ROLES = ['FE', 'BE', 'KADIV'];
+export const PIC_ROLES = ['FE', 'BE', 'KADIV', 'DBA', 'UI/UX'];
 
 export const PIC_ROLE_DESCRIPTION = {
   FE: 'Frontend',
   BE: 'Backend',
   KADIV: 'Kepala Divisi',
+  DBA: 'Database Admin',
+  'UI/UX': 'UI/UX Designer',
+};
+
+export const PIC_ROLE_DETAIL = {
+  FE: 'Frontend Developer',
+  BE: 'Backend Developer',
+  KADIV: 'Kepala Divisi',
+  DBA: 'Database Administrator',
+  'UI/UX': 'UI/UX Designer',
 };
 
 export const PRIORITY = {

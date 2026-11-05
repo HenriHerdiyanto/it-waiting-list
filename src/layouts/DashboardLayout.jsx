@@ -43,6 +43,20 @@ const NAV_ITEMS = [
       </svg>
     ),
   },
+  {
+    to: '/admin/statistik-pic',
+    label: 'Statistik PIC',
+    hint: 'Grafik beban request',
+    icon: (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 20V4" />
+        <path d="M4 20h16" />
+        <rect x="7" y="12" width="3" height="5" rx="1" />
+        <rect x="12" y="8" width="3" height="9" rx="1" />
+        <rect x="17" y="5" width="3" height="12" rx="1" />
+      </svg>
+    ),
+  },
 ];
 
 const PAGE_META = [  {
@@ -69,6 +83,11 @@ const PAGE_META = [  {
     match: (pathname) => pathname === '/admin/pic',
     title: 'Master PIC',
     subtitle: 'Kelola daftar programmer dan kepala divisi.',
+  },
+  {
+    match: (pathname) => pathname === '/admin/statistik-pic',
+    title: 'Statistik PIC',
+    subtitle: 'Grafik beban request per programmer dan PIC.',
   },
   {
     match: (pathname) => pathname === '/admin/pic/new',

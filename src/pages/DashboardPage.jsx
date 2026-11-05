@@ -11,7 +11,7 @@ import {
 } from '../constants';
 import { todayKey } from '../utils/date';
 import { formatDate, formatDateTime } from '../utils/format';
-import { formatPicNames } from '../utils/pic';
+import { formatPicNames, picRoleClass } from '../utils/pic';
 import { getOverdueDays, getScheduleStatus } from '../utils/schedule';
 
 const STATUS_CLASS = {
@@ -311,7 +311,7 @@ export default function DashboardPage() {
             <div className="role-summary">
               {roleRows.map((row) => (
                 <div className="role-summary-item" key={row.role}>
-                  <span className={`role-badge role-${row.role.toLowerCase()}`}>
+                  <span className={`role-badge ${picRoleClass(row.role)}`}>
                     {row.role}
                   </span>
                   <div>

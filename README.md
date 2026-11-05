@@ -22,7 +22,7 @@ Aplikasi web untuk mencatat, memantau, menjadwalkan, dan mengurutkan request/per
 - **Export CSV** — seluruh kolom jadwal, progres, keterangan bentrok, serta deskripsi awal dan deskripsi revisi.
 - **Panel admin** — tambah, edit, hapus, ubah prioritas, atur roadmap, dan buka kembali request selesai.
 - **Dashboard admin** — kartu statistik (Aktif, Revisi, Pending, Selesai, Urgent, Terlambat), daftar "Perlu Perhatian", jadwal terdekat, distribusi divisi, ringkasan PIC per role, dan request terbaru.
-- **Master PIC** — CRUD PIC terpisah dengan role `FE`, `BE`, atau `KADIV`; form request memakai **checkbox multi-PIC** sehingga satu request bisa ditangani lebih dari satu orang. PIC yang masih dipakai request tidak bisa dihapus, dan mengganti nama PIC otomatis menyelaraskan data request terkait.
+- **Master PIC** — CRUD PIC terpisah dengan role `FE`, `BE`, `KADIV`, `DBA`, atau `UI/UX`; form request memakai **checkbox multi-PIC** sehingga satu request bisa ditangani lebih dari satu orang. PIC yang masih dipakai request tidak bisa dihapus, dan mengganti nama PIC otomatis menyelaraskan data request terkait.
 - **Halaman terpisah dengan URL asli** — login, dashboard, daftar request, serta form tambah/edit request dan PIC masing-masing punya rute sendiri (bisa di-refresh dan dibagikan tautannya).
 - **Halaman publik read-only** — daftar request tetap bisa diakses tanpa login untuk melihat detail; seluruh aksi pengelolaan hanya muncul setelah login admin.
 - **Notifikasi toast, loading skeleton, dan error state**.
@@ -144,7 +144,7 @@ PIC disimpan pada resource terpisah (`pics`) dengan skema minimal:
 | --- | --- | --- |
 | `id` | number/string | ID dari API atau ID lokal |
 | `nama` | string | Nama unik PIC |
-| `role` | enum | `FE` (Frontend), `BE` (Backend), atau `KADIV` (Kepala Divisi) |
+| `role` | enum | `FE` (Frontend), `BE` (Backend), `KADIV` (Kepala Divisi), `DBA` (Database Administrator), atau `UI/UX` (UI/UX Designer) |
 | `createdAt` | ISO datetime | Waktu dibuat |
 | `updatedAt` | ISO datetime | Waktu terakhir diubah |
 

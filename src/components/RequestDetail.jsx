@@ -154,7 +154,7 @@ export default function RequestDetail({ request, busy, isLoggedIn, onClose, onTo
             <h4>Agenda per Tanggal</h4>
             <span className="hint">
               {progress.total > 0
-                ? `${progress.completed}/${progress.total} langkah · ${progress.percent}%`
+                ? `${progress.completed} dari ${progress.total} task Done · ${progress.percent}%`
                 : 'Belum ada agenda'}
             </span>
           </div>

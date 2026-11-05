@@ -5,7 +5,7 @@ import { LoadingState } from '../components/Feedback';
 import { useData } from '../contexts/DataContext';
 import { useToastContext } from '../contexts/ToastContext';
 import { PIC_ROLES, PIC_ROLE_DESCRIPTION } from '../constants';
-import { normalizePicNames } from '../utils/pic';
+import { normalizePicNames, picRoleClass } from '../utils/pic';
 
 const usageKey = (value) => String(value ?? '').trim().toLowerCase();
 
@@ -81,6 +81,9 @@ export default function PicListPage() {
         </div>
 
         <div className="page-actions">
+          <Link to="/admin/statistik-pic" className="btn btn-outline">
+            📊 Lihat Statistik
+          </Link>
           <button
             type="button"
             className="btn btn-outline"
@@ -113,7 +116,7 @@ export default function PicListPage() {
       <section className="pic-summary">
         {roleCounts.map((item) => (
           <div className="pic-summary-card" key={item.role}>
-            <span className={`role-badge role-${item.role.toLowerCase()}`}>
+            <span className={`role-badge ${picRoleClass(item.role)}`}>
               {item.role}
             </span>
             <div>
@@ -195,7 +198,7 @@ export default function PicListPage() {
                       </td>
                       <td>
                         <span
-                          className={`role-badge role-${pic.role.toLowerCase()}`}
+                          className={`role-badge ${picRoleClass(pic.role)}`}
                         >
                           {pic.role}
                         </span>

@@ -236,15 +236,25 @@ export default function RequestTable({
                       <ScheduleBadge item={req} />
 
                       {progress.total > 0 && (
-                        <div
-                          className="mini-progress"
-                          title={`Roadmap ${progress.completed}/${progress.total} langkah (${progress.percent}%)`}
-                        >
+                        <>
                           <div
-                            className="mini-progress-fill"
-                            style={{ width: `${progress.percent}%` }}
-                          />
-                        </div>
+                            className="mini-progress"
+                            role="progressbar"
+                            aria-valuemin={0}
+                            aria-valuemax={100}
+                            aria-valuenow={progress.percent}
+                            aria-label={`${progress.completed} dari ${progress.total} task Done`}
+                            title={`${progress.completed} dari ${progress.total} task Done (${progress.percent}%)`}
+                          >
+                            <div
+                              className="mini-progress-fill"
+                              style={{ width: `${progress.percent}%` }}
+                            />
+                          </div>
+                          <span className="mini-progress-text">
+                            {progress.completed} dari {progress.total} task Done
+                          </span>
+                        </>
                       )}
 
                       {req.jumlahTergeser > 0 && req.alasanTergeser && (

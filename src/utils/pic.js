@@ -1,4 +1,15 @@
+import { PIC_ROLES } from '../constants';
+
 const PIC_SEPARATOR = /[,;]+/;
+
+/** Class CSS aman untuk role PIC, termasuk role yang mengandung karakter khusus. */
+export function picRoleClass(role) {
+  const key = String(role ?? '').trim().toUpperCase();
+
+  if (key === 'UI/UX') return 'role-uiux';
+  if (PIC_ROLES.includes(key)) return `role-${key.toLowerCase()}`;
+  return 'role-other';
+}
 
 /**
  * Menormalkan PIC dari data baru (array) maupun data lama (string dipisah koma).
