@@ -3,7 +3,7 @@ import {
   ATTACHMENT_ACCEPT,
   isImageAttachment,
   isPdfAttachment,
-  isSafeAttachmentUrl,
+  isSafeAttachmentUrl, 
   MAX_ATTACHMENT_SIZE_MB,
   MAX_ATTACHMENTS,
   validateAttachmentFile,
