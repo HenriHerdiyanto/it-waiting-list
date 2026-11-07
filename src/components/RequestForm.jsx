@@ -187,14 +187,16 @@ export default function RequestForm({
 
         <div className="form-grid form-grid-3">
           <label className="field">
-            <span>Tanggal Mulai *</span>
+            <span>Tanggal Mulai</span>
             <input
               type="date"
-              required={form.status !== STATUS.DONE}
               value={form.mulai}
               onChange={(event) => handleStartChange(event.target.value)}
             />
-            <small className="hint">Semua tanggal bisa dipilih, termasuk akhir pekan.</small>
+            <small className="hint">
+              Opsional — kosongkan jika jadwal belum ditentukan. Semua tanggal bisa dipilih,
+              termasuk akhir pekan.
+            </small>
           </label>
 
           <label className="field">

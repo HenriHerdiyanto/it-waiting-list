@@ -3,20 +3,15 @@ import {
   PRIORITY,
   STATUS,
 } from '../constants';
-import { calculateEndDate, normalizeStart, todayKey } from './date';
+import { calculateEndDate, normalizeStart } from './date';
 import { normalizePicNames } from './pic';
 import { balanceRoadmap, validateRoadmap } from './roadmap';
 
 export function createEmptyForm() {
-  const mulai = todayKey();
-
   return {
     ...EMPTY_FORM,
     divisi: [],
     roadmap: [],
-    mulai,
-    durasiHari: 1,
-    estimasiSelesai: calculateEndDate(mulai, 1),
   };
 }
 
@@ -96,13 +91,6 @@ export function validateRequestPayload(payload) {
 
   if (payload.status === STATUS.REVISI && !payload.deskripsiRevisi.trim()) {
     return 'Deskripsi revisi wajib diisi saat status Revisi.';
-  }
-
-  if (payload.status !== STATUS.DONE) {
-    if (!payload.mulai) return 'Tanggal mulai wajib diisi untuk request aktif.';
-    if (!payload.estimasiSelesai) {
-      return 'Estimasi selesai tidak valid. Periksa tanggal mulai dan durasi.';
-    }
   }
 
   if (payload.prioritas === PRIORITY.URGENT && !payload.alasanPrioritas) {

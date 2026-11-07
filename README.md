@@ -7,13 +7,13 @@ Aplikasi web untuk mencatat, memantau, menjadwalkan, dan mengurutkan request/per
 - **Tab Aktif, Revisi, Pending & Selesai** — `On Proses`/`Waiting` di tab Aktif, `Revisi` di tab sendiri, `Pending` di tab sendiri, dan `Done` diarsipkan di tab Selesai.
 - **Alur revisi** — request `Done` yang masih bermasalah bisa diubah ke `Revisi` lewat dropdown status atau tombol cepat di tab Selesai. Saat masuk `Revisi`, **deskripsi revisi wajib diisi**. Tanggal selesai terakhir tetap tersimpan, sedangkan tanggal dan roadmap tidak diubah otomatis.
 - **Deskripsi sesuai status** — selama status `Revisi`, tabel dan detail menampilkan **deskripsi revisi**. Untuk status lain yang tampil adalah deskripsi awal. Deskripsi awal tetap bisa dibuka dari detail request.
-- **Timeline per request** — cukup isi tanggal mulai dan durasi hari (kalender); estimasi selesai dihitung otomatis (hanya-baca), plus realisasi mulai dan tanggal selesai.
+- **Timeline per request** — tanggal mulai **opsional** (kosongkan jika jadwal belum ditentukan); jika diisi, cukup lengkapi durasi hari kalender dan estimasi selesai dihitung otomatis (hanya-baca), plus realisasi mulai dan tanggal selesai.
 - **Roadmap per request** — generate otomatis per hari atau susun langkah custom dengan durasi berbeda; total durasi ikut menyesuaikan saat durasi request berubah.
 - **Prioritas berjenjang** — `Normal`, `Tinggi`, dan `Urgent`.
 - **Keterangan bentrok otomatis** — request `Urgent` yang bentrok dengan proyek lain dapat menandai proyek tersebut dengan keterangan `Tergeser oleh ... (Urgent)` lewat preview dan centang per proyek. Tanggal, durasi, dan roadmap proyek yang bentrok **tidak diubah**.
 - **Keterangan permanen** — keterangan bentrok tetap tersimpan sebagai riwayat meskipun request Urgent selesai atau dihapus. Tanggal proyek tidak pernah dipulihkan/diubah otomatis.
 - **Riwayat jadwal** — audit trail siapa yang menandai bentrok, kapan, dan keterangannya.
-- **Kesehatan jadwal** — badge `Terjadwal`, `Berjalan`, `Terlambat`, `Tergeser`, dan `Selesai`.
+- **Kesehatan jadwal** — badge `Belum Dijadwalkan`, `Terjadwal`, `Berjalan`, `Terlambat`, `Tergeser`, dan `Selesai`.
 - **Detail drawer** — klik baris request (tanpa perlu login) untuk melihat timeline, agenda kegiatan per tanggal, status langkah, dan riwayat keterangan bentrok dalam satu panel.
 - **Filter lengkap** — divisi, status, prioritas, kesehatan jadwal, rentang tanggal, dan hanya yang tergeser.
 - **Urutan manual** — tombol Naik/Turun dan drag & drop, tersimpan permanen ke API.
@@ -119,9 +119,9 @@ Tombol Naik/Turun dan drag & drop hanya menggeser request **di dalam grup priori
 | `kebijakanGeser` | enum | `geser` atau `paralel` |
 | `lingkupGeser` | enum | `semua`, `divisi`, atau `pic` |
 | `jadwalTerkunci` | boolean | Jika true, tidak diberi keterangan otomatis |
-| `mulai` | `YYYY-MM-DD` | Rencana tanggal mulai |
+| `mulai` | `YYYY-MM-DD`/null | Rencana tanggal mulai; boleh kosong jika jadwal belum ditentukan |
 | `durasiHari` | number | Durasi dalam hari kalender |
-| `estimasiSelesai` | `YYYY-MM-DD` | Dihitung dari mulai + durasi |
+| `estimasiSelesai` | `YYYY-MM-DD`/null | Dihitung dari mulai + durasi; null jika tanggal mulai kosong |
 | `actualStart` | ISO datetime | Otomatis saat status On Proses |
 | `tergeserOleh` | id/null | Request prioritas yang menandai bentrok |
 | `alasanTergeser` | string/null | Keterangan `Tergeser oleh {nama} ({prioritas})` |
@@ -155,6 +155,8 @@ Jika endpoint PIC tidak tersedia (misalnya resource `pics` belum dibuat di MockA
 ## Perhitungan Tanggal
 
 Semua hari dihitung sebagai hari kalender, termasuk Sabtu, Minggu, dan hari libur nasional. Aplikasi tidak melakukan pengecekan hari libur; pekerjaan di luar hari kerja diatur manual (misalnya lewat lembur). Durasi `1` hari berarti mulai dan selesai pada tanggal yang sama.
+
+Tanggal mulai boleh dikosongkan untuk status apa pun, misalnya project yang masih `Waiting` dan belum ditentukan kapan dimulai. Request tanpa tanggal mulai ditandai **Belum Dijadwalkan**; tanggal roadmap juga kosong sampai tanggal mulai diisi. Form tambah request baru tidak lagi otomatis mengisi tanggal hari ini.
 
 ## Menjalankan
 
