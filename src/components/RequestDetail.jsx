@@ -1,6 +1,18 @@
 import { useEffect } from 'react';
 import { STATUS } from '../constants';
-import { formatDate, formatDateRange, formatDateTime, getDisplayDescription } from '../utils/format';
+import {
+  formatDate,
+  formatDateRange,
+  formatDateTime,
+  formatFileSize,
+  getDisplayDescription,
+} from '../utils/format';
+import {
+  isImageAttachment,
+  isPdfAttachment,
+  isSafeAttachmentUrl,
+} from '../utils/attachments';
+import { formatLinkLabel, isValidLinkUrl } from '../utils/links';
 import { formatPicNames } from '../utils/pic';
 import { getOverdueDays, getScheduleStatus } from '../utils/schedule';
 import { roadmapProgress } from '../utils/roadmap';
@@ -52,6 +64,8 @@ export default function RequestDetail({ request, busy, isLoggedIn, onClose, onTo
   const isRevisi = request.status === STATUS.REVISI;
   const displayDescription = getDisplayDescription(request);
   const picLabel = formatPicNames(request.PIC);
+  const links = Array.isArray(request.links) ? request.links : [];
+  const attachments = Array.isArray(request.attachments) ? request.attachments : [];
   const hasDifferentOriginal =
     isRevisi && String(request.deskripsi ?? '').trim() !== displayDescription.trim();
 
@@ -99,7 +113,7 @@ export default function RequestDetail({ request, busy, isLoggedIn, onClose, onTo
         </div>
 
         <section className="detail-section">
-          <h4>{isRevisi ? 'Deskripsi Revisi' : 'Deskripsi'}</h4>
+          <h4>{isRevisi ? 'Deskripsi Revisi' : 'Deskripsi Pekerjaan'}</h4>
           <p className="detail-text">{displayDescription || '—'}</p>
           {hasDifferentOriginal && (
             <details className="detail-original">
@@ -108,6 +122,92 @@ export default function RequestDetail({ request, busy, isLoggedIn, onClose, onTo
             </details>
           )}
         </section>
+
+        {links.length > 0 && (
+          <section className="detail-section">
+            <h4>Link Tambahan</h4>
+            <ul className="detail-links">
+              {links.map((link) => (
+                <li key={link.id}>
+                  {isValidLinkUrl(link.url) ? (
+                    <a
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title={link.url}
+                    >
+                      {formatLinkLabel(link)} <span aria-hidden="true">↗</span>
+                    </a>
+                  ) : (
+                    <span className="detail-link-invalid">{formatLinkLabel(link)}</span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {attachments.length > 0 && (
+          <section className="detail-section">
+            <h4>Lampiran</h4>
+            <div className="detail-attachments">
+              {attachments.map((attachment) => {
+                const safeUrl = isSafeAttachmentUrl(attachment.url)
+                  ? attachment.url
+                  : '';
+                const isImage = isImageAttachment(attachment);
+                const isPdf = isPdfAttachment(attachment);
+                const meta = `${formatFileSize(attachment.size)} · ${
+                  isImage ? 'Gambar' : isPdf ? 'PDF' : 'File'
+                }`;
+
+                const content = (
+                  <>
+                    {isImage && safeUrl ? (
+                      <img
+                        className="detail-attachment-image-preview"
+                        src={safeUrl}
+                        alt={attachment.name}
+                        loading="lazy"
+                      />
+                    ) : (
+                      <span className="attachment-icon" aria-hidden="true">
+                        📄
+                      </span>
+                    )}
+                    <span className="detail-attachment-body">
+                      <strong className="detail-attachment-name">{attachment.name}</strong>
+                      <small className="detail-attachment-meta">{meta}</small>
+                    </span>
+                  </>
+                );
+
+                if (!safeUrl) {
+                  return (
+                    <div className="detail-attachment detail-attachment-file" key={attachment.id}>
+                      {content}
+                    </div>
+                  );
+                }
+
+                return (
+                  <a
+                    className={`detail-attachment ${
+                      isImage ? 'detail-attachment-image' : 'detail-attachment-file'
+                    }`}
+                    href={safeUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    key={attachment.id}
+                    title={`Buka ${attachment.name}`}
+                  >
+                    {content}
+                  </a>
+                );
+              })}
+            </div>
+          </section>
+        )}
 
         {request.alasanPrioritas && (
           <section className="detail-section">

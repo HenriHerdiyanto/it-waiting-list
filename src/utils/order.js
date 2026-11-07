@@ -19,6 +19,8 @@ import {
   daysBetween,
   normalizeStart,
 } from './date';
+import { normalizeAttachments } from './attachments';
+import { normalizeLinks } from './links';
 import { normalizeRoadmap } from './roadmap';
 import {
   isCanonicalPicArray,
@@ -192,6 +194,8 @@ export function normalizeRequest(item = {}, index = 0) {
     mulai,
     durasiHari,
     estimasiSelesai,
+    links: normalizeLinks(item.links),
+    attachments: normalizeAttachments(item.attachments),
     actualStart: item.actualStart ?? null,
     tergeserOleh,
     alasanTergeser: item.alasanTergeser ? String(item.alasanTergeser) : null,
@@ -261,6 +265,8 @@ function hasMigrationChanges(original, item) {
 
   return (
     jsonDiff(original.roadmap, item.roadmap) ||
+    jsonDiff(original.links, item.links) ||
+    jsonDiff(original.attachments, item.attachments) ||
     jsonDiff(original.jadwalAsli, item.jadwalAsli) ||
     jsonDiff(original.riwayatJadwal, item.riwayatJadwal)
   );
@@ -423,6 +429,12 @@ export function filterRequests(
       item.status,
       item.prioritas,
       ...item.divisi,
+      ...item.links.flatMap((link) => [link.label, link.url]),
+      ...item.attachments.flatMap((attachment) => [
+        attachment.name,
+        attachment.type,
+        attachment.url,
+      ]),
       ...(Array.isArray(item.roadmap)
         ? item.roadmap.flatMap((step) => [step.judul, step.deskripsi])
         : []),

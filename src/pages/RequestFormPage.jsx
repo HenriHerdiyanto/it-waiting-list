@@ -11,6 +11,7 @@ import {
   formFromRequest,
   validateRequestPayload,
 } from '../utils/requestPayload';
+import { uploadFiles } from '../services/uploadStore';
 
 function NotFound() {
   return (
@@ -31,6 +32,7 @@ function RequestFormScreen({ existing }) {
 
   const [form, setForm] = useState(() => formFromRequest(existing));
   const [shiftPreview, setShiftPreview] = useState(null);
+  const [uploading, setUploading] = useState(false);
 
   const handleChange = (field, value) => {
     setForm((previous) => ({ ...previous, [field]: value }));
@@ -38,13 +40,43 @@ function RequestFormScreen({ existing }) {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    if (saving) return;
+    if (saving || uploading) return;
 
-    const payload = buildRequestPayload(form, existing);
+    let workingForm = form;
+    let payload = buildRequestPayload(workingForm, existing);
     const error = validateRequestPayload(payload);
 
     if (error) {
       notify(error, 'error');
+      return;
+    }
+
+    const pendingFiles = Array.isArray(form.pendingFiles) ? form.pendingFiles : [];
+
+    if (pendingFiles.length > 0) {
+      setUploading(true);
+
+      try {
+        const uploaded = await uploadFiles(pendingFiles);
+        workingForm = {
+          ...form,
+          attachments: [...(form.attachments ?? []), ...uploaded],
+          pendingFiles: [],
+        };
+        setForm(workingForm);
+      } catch (uploadError) {
+        notify(uploadError.message || 'Gagal mengunggah file.', 'error');
+        return;
+      } finally {
+        setUploading(false);
+      }
+    }
+
+    payload = buildRequestPayload(workingForm, existing);
+    const finalError = validateRequestPayload(payload);
+
+    if (finalError) {
+      notify(finalError, 'error');
       return;
     }
 
@@ -106,7 +138,8 @@ function RequestFormScreen({ existing }) {
         key={existing?.id ?? 'new'}
         form={form}
         editing={Boolean(existing)}
-        saving={saving}
+        saving={saving || uploading}
+        uploading={uploading}
         picOptions={pics}
         onChange={handleChange}
         onSubmit={handleSubmit}

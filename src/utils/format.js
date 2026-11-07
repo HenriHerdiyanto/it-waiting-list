@@ -10,6 +10,8 @@ const CSV_HEADERS = [
   'Divisi',
   'Deskripsi',
   'Deskripsi Revisi',
+  'Link Tambahan',
+  'Lampiran',
   'PIC',
   'Prioritas',
   'Alasan Prioritas',
@@ -68,6 +70,12 @@ export function requestsToCsv(items, offset = 0, allRequests = []) {
       item.divisi.length > 0 ? item.divisi.join('; ') : 'Management',
       item.deskripsi,
       item.deskripsiRevisi,
+      (item.links ?? [])
+        .map((link) => [link.label, link.url].filter(Boolean).join(': '))
+        .join('; '),
+      (item.attachments ?? [])
+        .map((attachment) => `${attachment.name} (${attachment.url})`)
+        .join('; '),
       formatPicNames(item.PIC, '; '),
       item.prioritas,
       item.alasanPrioritas,
@@ -106,6 +114,22 @@ export function downloadCsv(filename, content) {
 
 export function todayStamp() {
   return new Date().toISOString().slice(0, 10);
+}
+
+/** Format ukuran file menjadi teks ringkas, misalnya 1.4 MB. */
+export function formatFileSize(bytes) {
+  const value = Number(bytes);
+  if (!Number.isFinite(value) || value <= 0) return '—';
+
+  const units = ['B', 'KB', 'MB', 'GB'];
+  const exponent = Math.min(
+    units.length - 1,
+    Math.floor(Math.log(value) / Math.log(1024)),
+  );
+  const size = value / 1024 ** exponent;
+  const rounded = exponent === 0 || size >= 10 ? Math.round(size) : Number(size.toFixed(1));
+
+  return `${rounded} ${units[exponent]}`;
 }
 
 export function formatDateShort(value) {

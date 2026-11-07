@@ -132,5 +132,8 @@ export const EMPTY_FORM = {
   mulai: '',
   durasiHari: 1,
   estimasiSelesai: '',
+  links: [],
+  attachments: [],
+  pendingFiles: [],
   roadmap: [],
 };

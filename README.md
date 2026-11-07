@@ -7,6 +7,7 @@ Aplikasi web untuk mencatat, memantau, menjadwalkan, dan mengurutkan request/per
 - **Tab Aktif, Revisi, Pending & Selesai** — `On Proses`/`Waiting` di tab Aktif, `Revisi` di tab sendiri, `Pending` di tab sendiri, dan `Done` diarsipkan di tab Selesai.
 - **Alur revisi** — request `Done` yang masih bermasalah bisa diubah ke `Revisi` lewat dropdown status atau tombol cepat di tab Selesai. Saat masuk `Revisi`, **deskripsi revisi wajib diisi**. Tanggal selesai terakhir tetap tersimpan, sedangkan tanggal dan roadmap tidak diubah otomatis.
 - **Deskripsi sesuai status** — selama status `Revisi`, tabel dan detail menampilkan **deskripsi revisi**. Untuk status lain yang tampil adalah deskripsi awal. Deskripsi awal tetap bisa dibuka dari detail request.
+- **Link tambahan & lampiran** — deskripsi cukup menjelaskan kebutuhan/pekerjaan. Link Figma, spreadsheet, atau referensi lain disimpan sebagai daftar link berjudul; gambar dan PDF diunggah terpisah sebagai lampiran (maksimal 10 MB per file dan 5 lampiran per request).
 - **Timeline per request** — tanggal mulai **opsional** (kosongkan jika jadwal belum ditentukan); jika diisi, cukup lengkapi durasi hari kalender dan estimasi selesai dihitung otomatis (hanya-baca), plus realisasi mulai dan tanggal selesai.
 - **Roadmap per request** — generate otomatis per hari atau susun langkah custom dengan durasi berbeda; total durasi ikut menyesuaikan saat durasi request berubah.
 - **Prioritas berjenjang** — `Normal`, `Tinggi`, dan `Urgent`.
@@ -14,17 +15,17 @@ Aplikasi web untuk mencatat, memantau, menjadwalkan, dan mengurutkan request/per
 - **Keterangan permanen** — keterangan bentrok tetap tersimpan sebagai riwayat meskipun request Urgent selesai atau dihapus. Tanggal proyek tidak pernah dipulihkan/diubah otomatis.
 - **Riwayat jadwal** — audit trail siapa yang menandai bentrok, kapan, dan keterangannya.
 - **Kesehatan jadwal** — badge `Belum Dijadwalkan`, `Terjadwal`, `Berjalan`, `Terlambat`, `Tergeser`, dan `Selesai`.
-- **Detail drawer** — klik baris request (tanpa perlu login) untuk melihat timeline, agenda kegiatan per tanggal, status langkah, dan riwayat keterangan bentrok dalam satu panel.
+- **Detail drawer** — klik baris request (tanpa perlu login) untuk melihat timeline, agenda kegiatan per tanggal, status langkah, daftar link tambahan, lampiran, dan riwayat keterangan bentrok dalam satu panel.
 - **Filter lengkap** — divisi, status, prioritas, kesehatan jadwal, rentang tanggal, dan hanya yang tergeser.
 - **Urutan manual** — tombol Naik/Turun dan drag & drop, tersimpan permanen ke API.
 - **Multi-divisi** — satu request bisa berasal dari beberapa divisi sekaligus.
-- **Pencarian** — nama, deskripsi awal, deskripsi revisi, PIC, divisi, alasan prioritas/keterangan bentrok, dan judul roadmap.
-- **Export CSV** — seluruh kolom jadwal, progres, keterangan bentrok, serta deskripsi awal dan deskripsi revisi.
+- **Pencarian** — nama, deskripsi awal, deskripsi revisi, PIC, divisi, alasan prioritas/keterangan bentrok, judul link, URL, nama lampiran, dan judul roadmap.
+- **Export CSV** — seluruh kolom jadwal, progres, keterangan bentrok, deskripsi awal, deskripsi revisi, link tambahan, dan nama/URL lampiran.
 - **Panel admin** — tambah, edit, hapus, ubah prioritas, atur roadmap, dan buka kembali request selesai.
 - **Dashboard admin** — kartu statistik (Aktif, Revisi, Pending, Selesai, Urgent, Terlambat), daftar "Perlu Perhatian", jadwal terdekat, distribusi divisi, ringkasan PIC per role, dan request terbaru.
 - **Master PIC** — CRUD PIC terpisah dengan role `FE`, `BE`, `KADIV`, `DBA`, atau `UI/UX`; form request memakai **checkbox multi-PIC** sehingga satu request bisa ditangani lebih dari satu orang. PIC yang masih dipakai request tidak bisa dihapus, dan mengganti nama PIC otomatis menyelaraskan data request terkait.
 - **Halaman terpisah dengan URL asli** — login, dashboard, daftar request, serta form tambah/edit request dan PIC masing-masing punya rute sendiri (bisa di-refresh dan dibagikan tautannya).
-- **Halaman publik read-only** — daftar request tetap bisa diakses tanpa login untuk melihat detail; seluruh aksi pengelolaan hanya muncul setelah login admin.
+- **Halaman publik read-only** — daftar request tetap bisa diakses tanpa login untuk melihat detail, termasuk link tambahan dan lampiran; seluruh aksi pengelolaan hanya muncul setelah login admin.
 - **Notifikasi toast, loading skeleton, dan error state**.
 
 ## Halaman & Rute
@@ -109,8 +110,10 @@ Tombol Naik/Turun dan drag & drop hanya menggeser request **di dalam grup priori
 | `id` | number/string | ID dari API |
 | `nama_orang_req` | string | Nama requester |
 | `divisi` | string[] | Bisa lebih dari satu |
-| `deskripsi` | string | Deskripsi masalah awal |
+| `deskripsi` | string | Deskripsi pekerjaan/kebutuhan awal; tidak dipakai untuk menampung link |
 | `deskripsiRevisi` | string | Deskripsi kesalahan/perbaikan; wajib saat status `Revisi` dan yang ditampilkan ke user |
+| `links` | array | Link tambahan `{ id, label, url }`, misalnya Figma atau spreadsheet |
+| `attachments` | array | Lampiran `{ id, name, type, size, url }`; file disimpan di server upload |
 | `PIC` | string[] | Daftar penanggung jawab; bisa lebih dari satu |
 | `status` | enum | `On Proses`, `Waiting`, `Revisi`, `Pending`, `Done` |
 | `prioritas` | enum | `Normal`, `Tinggi`, `Urgent` |
@@ -134,7 +137,7 @@ Tombol Naik/Turun dan drag & drop hanya menggeser request **di dalam grup priori
 | `updatedAt` | ISO datetime | Waktu terakhir diubah |
 | `doneAt` | ISO datetime/null | Waktu selesai; dipertahankan saat status berubah ke `Revisi`, lalu diperbarui saat selesai lagi |
 
-Data lama dimigrasikan otomatis saat aplikasi dimuat: `is_priority: true` menjadi `prioritas: "Urgent"`, divisi string menjadi array, PIC string menjadi `string[]`, dan field jadwal baru diberi nilai default. Karena `estimasiSelesai` selalu dihitung ulang dari `mulai + durasi`, jadwal lama yang sebelumnya melompati akhir pekan ikut disesuaikan otomatis.
+Data lama dimigrasikan otomatis saat aplikasi dimuat: `is_priority: true` menjadi `prioritas: "Urgent"`, divisi string menjadi array, PIC string menjadi `string[]`, `links`/`attachments` yang belum ada diisi array kosong, dan field jadwal baru diberi nilai default. Karena `estimasiSelesai` selalu dihitung ulang dari `mulai + durasi`, jadwal lama yang sebelumnya melompati akhir pekan ikut disesuaikan otomatis.
 
 ## Master PIC
 
@@ -165,7 +168,16 @@ npm install
 npm run dev
 ```
 
-Buka alamat yang ditampilkan Vite (biasanya `http://localhost:5173`).
+`npm run dev` menjalankan dua proses sekaligus: frontend Vite dan server upload (`server/index.js`) di port `3002`. Buka alamat yang ditampilkan Vite (biasanya `http://localhost:5173`); permintaan ke `/api` dan `/uploads` diproksikan otomatis ke server upload.
+
+Untuk mode produksi:
+
+```bash
+npm run build
+npm start
+```
+
+`npm start` menyajikan hasil build dari `dist/` sekaligus file lampiran dari `uploads/` di `http://localhost:3002` (atau sesuai `PORT`). Jalankan di host Node yang memiliki penyimpanan disk persisten agar file lampiran tidak hilang saat redeploy.
 
 Login admin default:
 
@@ -181,9 +193,31 @@ VITE_API_URL=https://6ae305fe933120ae20f80e32.mockapi.io/requests
 VITE_PIC_API_URL=
 VITE_ADMIN_USER=admin
 VITE_ADMIN_PASS=admin123
+VITE_UPLOAD_URL=/api/uploads
+PORT=3002
+UPLOAD_DIR=./uploads
+PUBLIC_UPLOAD_URL=
+CORS_ORIGIN=*
+MAX_UPLOAD_MB=10
+MAX_UPLOAD_FILES=5
 ```
 
 `VITE_PIC_API_URL` boleh dikosongkan; aplikasi akan menurunkan alamatnya dari `VITE_API_URL` dengan mengganti `/requests` menjadi `/pics`. Isi variabel ini jika master PIC berada di endpoint yang berbeda.
+
+`VITE_UPLOAD_URL` adalah endpoint upload dari sisi frontend. Nilai default `/api/uploads` memakai same-origin sehingga cocok untuk proxy Vite maupun server produksi. Jika frontend dan server upload berada di origin berbeda, isi URL lengkap (misalnya `https://files.contoh.com/api/uploads`) dan sesuaikan `CORS_ORIGIN`.
+
+Variabel berikut dibaca oleh `server/index.js`:
+
+| Variabel | Default | Keterangan |
+| --- | --- | --- |
+| `PORT` | `3002` | Port server upload dan server produksi |
+| `UPLOAD_DIR` | `./uploads` | Folder penyimpanan file; gunakan path disk persisten di produksi |
+| `PUBLIC_UPLOAD_URL` | kosong | Base URL publik file jika berbeda dari origin aplikasi, misalnya `https://files.contoh.com` |
+| `CORS_ORIGIN` | `*` | Origin yang diizinkan mengakses endpoint upload |
+| `MAX_UPLOAD_MB` | `10` | Batas ukuran per file |
+| `MAX_UPLOAD_FILES` | `5` | Batas jumlah file per sekali upload |
+
+Batas di frontend mengikuti 10 MB per file dan 5 lampiran per request. Jika `MAX_UPLOAD_MB`/`MAX_UPLOAD_FILES` di server diubah, sesuaikan juga konstanta di `src/utils/attachments.js` agar pesan validasi tetap konsisten.
 
 Ingin memakai json-server lokal? Jalankan `npm run server` (port `3001`), lalu set:
 
@@ -193,19 +227,38 @@ VITE_API_URL=http://localhost:3001/requests
 
 `db.json` sudah menyertakan koleksi `requests` dan `pics`, sehingga mode lokal langsung berjalan untuk keduanya.
 
+## Upload Lampiran
+
+Link tambahan tidak diunggah ke server; hanya URL dan judulnya yang disimpan di field `links`. Sebaliknya, gambar dan PDF disimpan sebagai file fisik melalui server upload:
+
+- **Jenis file**: JPG/JPEG, PNG, WebP, GIF, dan PDF.
+- **Batas**: 10 MB per file dan maksimal 5 lampiran per request.
+- **Endpoint**: `POST /api/uploads` dengan field multipart `files`; respons berisi array `{ id, name, type, size, url }`.
+- **Akses file**: `GET /uploads/<nama-file>`; file diberi nama UUID agar tidak bentrok.
+- **Waktu upload**: file baru diunggah saat form disimpan, sehingga membatalkan edit tidak meninggalkan file yatim.
+- **Penyimpanan metadata**: hanya metadata lampiran yang disimpan di record request (MockAPI/json-server). File fisik tetap berada di `UPLOAD_DIR`.
+
+Menghapus lampiran dari request hanya menghapus referensinya, bukan file fisiknya. File juga tidak ikut terhapus saat request dihapus. Lakukan pembersihan berkala untuk file yang tidak lagi dirujuk oleh request mana pun, dan backup folder `uploads/` secara rutin. Pada hosting dengan disk sementara (misalnya serverless), gunakan object storage dan sesuaikan `PUBLIC_UPLOAD_URL` serta `VITE_UPLOAD_URL`.
+
 ## Script
 
 | Script | Fungsi |
 | --- | --- |
-| `npm run dev` | Menjalankan development server Vite |
+| `npm run dev` | Menjalankan Vite dan server upload sekaligus |
+| `npm run dev:web` | Menjalankan Vite saja (tanpa server upload) |
+| `npm run upload-server` | Menjalankan server upload saja |
+| `npm start` | Server produksi: menyajikan `dist/` dan `/uploads` |
 | `npm run build` | Build produksi ke folder `dist` |
-| `npm run preview` | Melihat hasil build |
-| `npm run lint` | Menjalankan `oxlint` |
+| `npm run preview` | Melihat hasil build (tanpa server upload; gunakan `npm start` untuk menguji lampiran) |
+| `npm run lint` | Menjalankan `oxlint` pada `src` dan `server` |
 | `npm run server` | Menjalankan json-server dengan `db.json` |
 
 ## Struktur Proyek
 
 ```
+server/
+└─ index.js                   # Upload file, static /uploads, & serve dist (produksi)
+uploads/                      # File lampiran (tidak di-commit; butuh disk persisten)
 src/
 ├─ App.jsx                    # Router + komposisi provider
 ├─ api.js                     # Wrapper fetch + CRUD request & PIC + batch save
@@ -230,20 +283,25 @@ src/
 │  ├─ PicListPage.jsx
 │  └─ PicFormPage.jsx
 ├─ services/
-│  └─ picStore.js             # Master PIC via API + fallback localStorage
+│  ├─ picStore.js             # Master PIC via API + fallback localStorage
+│  └─ uploadStore.js          # Upload lampiran ke server
 ├─ utils/
 │  ├─ date.js                 # Utilitas tanggal kalender & overlap
 │  ├─ schedule.js             # Kesehatan jadwal & rencana keterangan bentrok
 │  ├─ roadmap.js              # Generate, sinkronisasi, validasi roadmap
 │  ├─ order.js                # Normalisasi, sorting, filter, perpindahan
 │  ├─ pic.js                  # Normalisasi & operasi multi-PIC
+│  ├─ links.js                # Normalisasi, validasi, & label link tambahan
+│  ├─ attachments.js          # Batas, validasi, & normalisasi lampiran
 │  ├─ requestPayload.js       # Form request <-> payload + validasi
-│  └─ format.js               # Format tanggal & export CSV
+│  └─ format.js               # Format tanggal, ukuran file, & export CSV
 ├─ components/
 │  ├─ Header.jsx
 │  ├─ LoginForm.jsx
 │  ├─ RequestsExplorer.jsx    # Daftar request bersama (publik & admin)
 │  ├─ RequestForm.jsx
+│  ├─ LinksEditor.jsx         # Baris link tambahan (judul opsional + URL)
+│  ├─ AttachmentEditor.jsx    # Pilih, pratinjau, & hapus lampiran
 │  ├─ PicPicker.jsx           # Checkbox multi-PIC per role
 │  ├─ RoadmapEditor.jsx
 │  ├─ DivisiPicker.jsx
@@ -267,3 +325,5 @@ src/
 ## Catatan Keamanan
 
 Login admin saat ini hanya pembatas UI: kredensial dibaca dari env dan status login disimpan di `localStorage`. Ini **bukan autentikasi yang aman** karena kode frontend dapat dibaca siapa pun. Untuk penggunaan produksi, gunakan autentikasi di sisi server/backend.
+
+Endpoint `POST /api/uploads` dan file di `/uploads` bersifat publik tanpa autentikasi, sama seperti detail request yang memang dapat dilihat tanpa login. Siapa pun yang mengetahui URL file dapat mengaksesnya. Untuk produksi, tambahkan autentikasi/otorisasi upload, rate limit, validasi ulang tipe file di server, serta pertimbangkan pemindaian malware. Jangan mengunggah dokumen sensitif sebelum kontrol keamanan tersebut tersedia.

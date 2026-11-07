@@ -205,7 +205,19 @@ export default function RequestTable({
                     </div>
                   </td>
 
-                  <td className="cell-desc">{getDisplayDescription(req) || '-'}</td>
+                  <td className="cell-desc">
+                    <span className="cell-desc-text">{getDisplayDescription(req) || '-'}</span>
+                    {(req.links?.length > 0 || req.attachments?.length > 0) && (
+                      <span className="request-extras">
+                        {req.links?.length > 0 && (
+                          <span>🔗 {req.links.length} link</span>
+                        )}
+                        {req.attachments?.length > 0 && (
+                          <span>📎 {req.attachments.length} file</span>
+                        )}
+                      </span>
+                    )}
+                  </td>
 
                   <td className="cell-pic">
                     {picNames.length > 0 ? (

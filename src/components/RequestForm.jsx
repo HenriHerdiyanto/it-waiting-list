@@ -12,7 +12,9 @@ import {
 import { calculateEndDate, normalizeStart } from '../utils/date';
 import { balanceRoadmap, syncRoadmapDates } from '../utils/roadmap';
 import { formatDate } from '../utils/format';
+import AttachmentEditor from './AttachmentEditor';
 import DivisiPicker from './DivisiPicker';
+import LinksEditor from './LinksEditor';
 import PicPicker from './PicPicker';
 import RoadmapEditor from './RoadmapEditor';
 
@@ -20,6 +22,7 @@ export default function RequestForm({
   form,
   editing,
   saving,
+  uploading = false,
   picOptions = [],
   onChange,
   onSubmit,
@@ -127,14 +130,18 @@ export default function RequestForm({
         </div>
 
         <label className="field">
-          <span>Deskripsi Masalah *</span>
+          <span>Deskripsi Pekerjaan *</span>
           <textarea
             rows={4}
-            placeholder="Jelaskan masalah atau request secara detail"
+            placeholder="Jelaskan apa yang akan dibuat atau diperbaiki"
             required
             value={form.deskripsi}
             onChange={(event) => onChange('deskripsi', event.target.value)}
           />
+          <small className="hint">
+            Cukup tuliskan kebutuhan atau pekerjaannya. Link dan file dipisahkan di bagian
+            bawah.
+          </small>
         </label>
 
         {form.status === STATUS.REVISI && (
@@ -180,6 +187,26 @@ export default function RequestForm({
             ))}
           </select>
         </label>
+      </section>
+
+      <section className="form-section">
+        <h4>Link Tambahan</h4>
+        <LinksEditor
+          links={form.links}
+          disabled={saving}
+          onChange={(value) => onChange('links', value)}
+        />
+      </section>
+
+      <section className="form-section">
+        <h4>Lampiran File</h4>
+        <AttachmentEditor
+          attachments={form.attachments}
+          pendingFiles={form.pendingFiles}
+          disabled={saving}
+          onAttachmentsChange={(value) => onChange('attachments', value)}
+          onPendingChange={(value) => onChange('pendingFiles', value)}
+        />
       </section>
 
       <section className="form-section">
@@ -317,7 +344,13 @@ export default function RequestForm({
           className={`btn ${editing ? 'btn-warning' : 'btn-success'}`}
           disabled={saving}
         >
-          {saving ? 'Menyimpan...' : editing ? 'Update Request' : 'Simpan Request'}
+          {saving
+            ? uploading
+              ? 'Mengunggah file...'
+              : 'Menyimpan...'
+            : editing
+              ? 'Update Request'
+              : 'Simpan Request'}
         </button>
 
         {editing && (

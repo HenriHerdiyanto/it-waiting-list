@@ -33,7 +33,7 @@ export default function FilterPanel({
       <input
         className="search-input"
         type="search"
-        placeholder="🔍 Cari nama, deskripsi, PIC, alasan, atau roadmap..."
+        placeholder="🔍 Cari nama, deskripsi, PIC, link, lampiran, atau roadmap..."
         value={search}
         onChange={(event) => onSearchChange(event.target.value)}
       />
