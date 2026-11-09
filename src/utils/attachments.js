@@ -1,6 +1,7 @@
 export const MAX_ATTACHMENTS = 5;
 export const MAX_ATTACHMENT_SIZE_MB = 10;
-export const MAX_ATTACHMENT_SIZE = MAX_ATTACHMENT_SIZE_MB * 1024 * 1024;
+// Cloudinary Free membatasi file 10 MB (desimal), jadi samakan batasnya.
+export const MAX_ATTACHMENT_SIZE = MAX_ATTACHMENT_SIZE_MB * 1000 * 1000;
 
 export const ALLOWED_ATTACHMENT_TYPES = [
   'image/jpeg',

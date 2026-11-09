@@ -17,7 +17,7 @@ const DIST_DIR = path.join(ROOT_DIR, 'dist');
 const PUBLIC_UPLOAD_URL = String(process.env.PUBLIC_UPLOAD_URL || '').replace(/\/+$/, '');
 const CORS_ORIGIN = process.env.CORS_ORIGIN || '*';
 const MAX_UPLOAD_MB = Math.max(1, Number(process.env.MAX_UPLOAD_MB) || 10);
-const MAX_FILE_SIZE = MAX_UPLOAD_MB * 1024 * 1024;
+const MAX_FILE_SIZE = MAX_UPLOAD_MB * 1000 * 1000;
 const MAX_FILES = Math.max(1, Number(process.env.MAX_UPLOAD_FILES) || 5);
 
 const ALLOWED_TYPES = new Map([

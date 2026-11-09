@@ -177,7 +177,24 @@ npm run build
 npm start
 ```
 
-`npm start` menyajikan hasil build dari `dist/` sekaligus file lampiran dari `uploads/` di `http://localhost:3002` (atau sesuai `PORT`). Jalankan di host Node yang memiliki penyimpanan disk persisten agar file lampiran tidak hilang saat redeploy.
+`npm start` menyajikan hasil build dari `dist/` sekaligus file lampiran dari `uploads/` di `http://localhost:3002` (atau sesuai `PORT`). Jalankan di host Node yang memiliki penyimpanan disk persisten agar file lampiran tidak hilang saat redeploy. Untuk Vercel, gunakan mode Cloudinary di bawah karena filesystem Vercel tidak persisten.
+
+### Deploy ke Vercel
+
+Vercel hanya menyajikan hasil build frontend (`dist/`). Server Express di `server/index.js` tidak ikut berjalan, jadi upload tidak boleh bergantung pada folder `uploads/` lokal. Gunakan Cloudinary Free agar lampiran tetap bisa diunggah dan dilihat:
+
+1. Buat akun gratis di [Cloudinary](https://cloudinary.com), lalu catat **Cloud name**.
+2. Buat **unsigned upload preset** di Settings → Upload → Upload presets dengan allowed formats `jpg,png,webp,gif,pdf`.
+3. Aktifkan **Allow delivery of PDF and ZIP files** di Settings → Security agar PDF bisa dibuka di browser.
+4. Di Vercel → Settings → Environment Variables, tambahkan:
+   ```env
+   VITE_UPLOAD_PROVIDER=cloudinary
+   VITE_CLOUDINARY_CLOUD_NAME=cloud_name_anda
+   VITE_CLOUDINARY_UPLOAD_PRESET=nama_preset_anda
+   ```
+5. Pastikan **Framework Preset** di Vercel adalah **Vite**, bukan `Other`.
+6. Redeploy, karena Vite membaca environment variable saat build.
+7. File `vercel.json` sudah menyertakan rewrite SPA agar halaman seperti `/login`, `/dashboard`, dan `/admin/...` tidak 404 saat di-refresh atau dibuka langsung.
 
 Login admin default:
 
@@ -193,7 +210,10 @@ VITE_API_URL=https://6ae305fe933120ae20f80e32.mockapi.io/requests
 VITE_PIC_API_URL=
 VITE_ADMIN_USER=admin
 VITE_ADMIN_PASS=admin123
+VITE_UPLOAD_PROVIDER=local
 VITE_UPLOAD_URL=/api/uploads
+VITE_CLOUDINARY_CLOUD_NAME=
+VITE_CLOUDINARY_UPLOAD_PRESET=
 PORT=3002
 UPLOAD_DIR=./uploads
 PUBLIC_UPLOAD_URL=
@@ -204,7 +224,11 @@ MAX_UPLOAD_FILES=5
 
 `VITE_PIC_API_URL` boleh dikosongkan; aplikasi akan menurunkan alamatnya dari `VITE_API_URL` dengan mengganti `/requests` menjadi `/pics`. Isi variabel ini jika master PIC berada di endpoint yang berbeda.
 
-`VITE_UPLOAD_URL` adalah endpoint upload dari sisi frontend. Nilai default `/api/uploads` memakai same-origin sehingga cocok untuk proxy Vite maupun server produksi. Jika frontend dan server upload berada di origin berbeda, isi URL lengkap (misalnya `https://files.contoh.com/api/uploads`) dan sesuaikan `CORS_ORIGIN`.
+`VITE_UPLOAD_PROVIDER` menentukan tujuan upload: `local` memakai server Express melalui `VITE_UPLOAD_URL`, sedangkan `cloudinary` mengunggah langsung dari browser ke Cloudinary. Jika `VITE_UPLOAD_PROVIDER` tidak diisi tetapi `VITE_CLOUDINARY_CLOUD_NAME` dan `VITE_CLOUDINARY_UPLOAD_PRESET` diisi, aplikasi otomatis memakai mode Cloudinary.
+
+`VITE_UPLOAD_URL` adalah endpoint upload lokal dari sisi frontend. Nilai default `/api/uploads` memakai same-origin sehingga cocok untuk proxy Vite maupun server produksi. Jika frontend dan server upload berada di origin berbeda, isi URL lengkap (misalnya `https://files.contoh.com/api/uploads`) dan sesuaikan `CORS_ORIGIN`. Variabel ini tidak dipakai saat mode Cloudinary aktif.
+
+`VITE_CLOUDINARY_CLOUD_NAME` dan `VITE_CLOUDINARY_UPLOAD_PRESET` adalah kredensial publik Cloudinary untuk unsigned upload. Jangan pernah menaruh API secret Cloudinary di frontend.
 
 Variabel berikut dibaca oleh `server/index.js`:
 
@@ -229,16 +253,30 @@ VITE_API_URL=http://localhost:3001/requests
 
 ## Upload Lampiran
 
-Link tambahan tidak diunggah ke server; hanya URL dan judulnya yang disimpan di field `links`. Sebaliknya, gambar dan PDF disimpan sebagai file fisik melalui server upload:
+Link tambahan tidak diunggah ke server; hanya URL dan judulnya yang disimpan di field `links`. Sebaliknya, gambar dan PDF disimpan sebagai file fisik:
 
 - **Jenis file**: JPG/JPEG, PNG, WebP, GIF, dan PDF.
 - **Batas**: 10 MB per file dan maksimal 5 lampiran per request.
+- **Waktu upload**: file baru diunggah saat form disimpan, sehingga membatalkan edit tidak meninggalkan file yatim.
+- **Penyimpanan metadata**: hanya metadata lampiran yang disimpan di record request (MockAPI/json-server).
+
+Ada dua mode penyimpanan:
+
+### Mode lokal (default)
+
 - **Endpoint**: `POST /api/uploads` dengan field multipart `files`; respons berisi array `{ id, name, type, size, url }`.
 - **Akses file**: `GET /uploads/<nama-file>`; file diberi nama UUID agar tidak bentrok.
-- **Waktu upload**: file baru diunggah saat form disimpan, sehingga membatalkan edit tidak meninggalkan file yatim.
-- **Penyimpanan metadata**: hanya metadata lampiran yang disimpan di record request (MockAPI/json-server). File fisik tetap berada di `UPLOAD_DIR`.
+- File ditulis ke `UPLOAD_DIR` (default `uploads/`) dan hanya cocok untuk `npm run dev` atau `npm start` di host dengan disk persisten.
 
-Menghapus lampiran dari request hanya menghapus referensinya, bukan file fisiknya. File juga tidak ikut terhapus saat request dihapus. Lakukan pembersihan berkala untuk file yang tidak lagi dirujuk oleh request mana pun, dan backup folder `uploads/` secara rutin. Pada hosting dengan disk sementara (misalnya serverless), gunakan object storage dan sesuaikan `PUBLIC_UPLOAD_URL` serta `VITE_UPLOAD_URL`.
+### Mode Cloudinary (Vercel)
+
+- Set `VITE_UPLOAD_PROVIDER=cloudinary`, `VITE_CLOUDINARY_CLOUD_NAME`, dan `VITE_CLOUDINARY_UPLOAD_PRESET`.
+- Browser mengunggah langsung ke Cloudinary memakai unsigned upload preset; tidak ada file yang ditulis ke disk Vercel.
+- URL lampiran yang disimpan berupa URL absolut Cloudinary, sehingga bisa dibuka dari deployment mana pun.
+- Aktifkan **Allow delivery of PDF and ZIP files** di Cloudinary agar PDF bisa dibuka di browser.
+- Cloudinary Free memiliki kuota bulanan; pantau pemakaian di dashboard Cloudinary.
+
+Menghapus lampiran dari request hanya menghapus referensinya, bukan file fisiknya. File juga tidak ikut terhapus saat request dihapus. Lakukan pembersihan berkala untuk file yang tidak lagi dirujuk oleh request mana pun, dan backup folder `uploads/`/akun Cloudinary secara rutin.
 
 ## Script
 
@@ -256,9 +294,10 @@ Menghapus lampiran dari request hanya menghapus referensinya, bukan file fisikny
 ## Struktur Proyek
 
 ```
+vercel.json                   # Build Vercel + rewrite SPA
 server/
-└─ index.js                   # Upload file, static /uploads, & serve dist (produksi)
-uploads/                      # File lampiran (tidak di-commit; butuh disk persisten)
+└─ index.js                   # Upload file lokal, static /uploads, & serve dist (produksi)
+uploads/                      # File lampiran mode lokal (tidak di-commit; butuh disk persisten)
 src/
 ├─ App.jsx                    # Router + komposisi provider
 ├─ api.js                     # Wrapper fetch + CRUD request & PIC + batch save
@@ -284,7 +323,7 @@ src/
 │  └─ PicFormPage.jsx
 ├─ services/
 │  ├─ picStore.js             # Master PIC via API + fallback localStorage
-│  └─ uploadStore.js          # Upload lampiran ke server
+│  └─ uploadStore.js          # Upload lampiran ke server lokal / Cloudinary
 ├─ utils/
 │  ├─ date.js                 # Utilitas tanggal kalender & overlap
 │  ├─ schedule.js             # Kesehatan jadwal & rencana keterangan bentrok
@@ -327,3 +366,5 @@ src/
 Login admin saat ini hanya pembatas UI: kredensial dibaca dari env dan status login disimpan di `localStorage`. Ini **bukan autentikasi yang aman** karena kode frontend dapat dibaca siapa pun. Untuk penggunaan produksi, gunakan autentikasi di sisi server/backend.
 
 Endpoint `POST /api/uploads` dan file di `/uploads` bersifat publik tanpa autentikasi, sama seperti detail request yang memang dapat dilihat tanpa login. Siapa pun yang mengetahui URL file dapat mengaksesnya. Untuk produksi, tambahkan autentikasi/otorisasi upload, rate limit, validasi ulang tipe file di server, serta pertimbangkan pemindaian malware. Jangan mengunggah dokumen sensitif sebelum kontrol keamanan tersebut tersedia.
+
+Pada mode Cloudinary, unsigned upload preset bersifat publik dan namanya terlihat di kode frontend. Batasi **allowed formats** pada preset, validasi ukuran di aplikasi, dan jangan pernah menaruh API secret Cloudinary di frontend. Untuk kontrol lebih ketat, gunakan signed upload melalui backend yang menyimpan API secret.
