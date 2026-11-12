@@ -4,14 +4,14 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently -k -n web,upload -c blue,magenta \"vite\" \"node server/index.js\"",
+    "dev": "concurrently -k -n web,api,upload -c blue,magenta \"vite\" \"json-server db.json --port 3001\" \"node server/index.js\"",
     "dev:web": "vite",
     "upload-server": "node server/index.js",
     "start": "node server/index.js",
     "build": "vite build",
     "lint": "oxlint src server",
     "preview": "vite preview",
-    "server": "json-server --watch db.json --port 3001"
+    "server": "json-server db.json --port 3001"
   },
   "dependencies": {
     "dotenv": "^18.0.9",

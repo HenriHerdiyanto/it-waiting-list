@@ -1,67 +1,407 @@
 {
   "requests": [
     {
-      "id": 1,
-      "nama_orang_req": "Farhan",
-      "divisi": ["Aoshi"],
-      "deskripsi": "Server ERP down, produksi berhenti. Perlu perbaikan segera.",
-      "PIC": ["Bima", "Sinta"],
+      "nama_orang_req": "Pak Vito",
+      "divisi": [
+        "Rapspoint"
+      ],
+      "deskripsi": "Pembuatan fitur indexing untuk memantau kesehatan perusahaan\n\n",
+      "deskripsiRevisi": "",
+      "PIC": [
+        "Farid",
+        "Bima",
+        "Henry"
+      ],
       "status": "On Proses",
       "prioritas": "Urgent",
       "is_priority": true,
-      "alasanPrioritas": "Server ERP mati dan menghentikan produksi seluruh divisi.",
+      "alasanPrioritas": "Permintaan CEO",
       "kebijakanGeser": "geser",
       "lingkupGeser": "semua",
       "jadwalTerkunci": false,
-      "mulai": "2026-11-03",
-      "durasiHari": 3,
-      "estimasiSelesai": "2026-11-05",
-      "actualStart": "2026-11-03T01:30:00.000Z",
+      "mulai": null,
+      "durasiHari": 1,
+      "estimasiSelesai": null,
+      "links": [],
+      "attachments": [],
+      "roadmap": [],
+      "createdAt": "2026-11-12T16:54:03.975Z",
+      "updatedAt": "2026-11-12T16:54:03.975Z",
+      "actualStart": "2026-11-12T16:54:03.975Z",
+      "doneAt": null,
+      "urutan": 1,
+      "id": "RQHjDVWnu2M",
       "tergeserOleh": null,
       "alasanTergeser": null,
       "jadwalAsli": null,
       "jumlahTergeser": 0,
-      "riwayatJadwal": [],
-      "roadmap": [
-        {
-          "id": "step-erp-1",
-          "judul": "Analisa log & backup database",
-          "deskripsi": "Pastikan backup sebelum perubahan konfigurasi.",
-          "durasiHari": 1,
-          "status": "done",
-          "mulai": "2026-11-03",
-          "selesai": "2026-11-03"
-        },
-        {
-          "id": "step-erp-2",
-          "judul": "Perbaikan service & konfigurasi",
-          "deskripsi": "Perbaiki service ERP yang gagal start.",
-          "durasiHari": 1,
-          "status": "done",
-          "mulai": "2026-11-04",
-          "selesai": "2026-11-04"
-        },
-        {
-          "id": "step-erp-3",
-          "judul": "Uji coba & serah terima",
-          "deskripsi": "Uji transaksi dan konfirmasi ke user.",
-          "durasiHari": 1,
-          "status": "todo",
-          "mulai": "2026-11-05",
-          "selesai": "2026-11-05"
-        }
-      ],
-      "urutan": 1,
-      "createdAt": "2026-11-02T02:00:00.000Z",
-      "updatedAt": "2026-11-03T01:30:00.000Z",
-      "doneAt": null
+      "riwayatJadwal": []
     },
     {
-      "id": 2,
-      "nama_orang_req": "Andi",
-      "divisi": ["FMI"],
-      "deskripsi": "Update aplikasi stok gudang ke versi terbaru.",
-      "PIC": ["Rizal"],
+      "nama_orang_req": "Bilal",
+      "divisi": [],
+      "deskripsi": "Pembuatan alur reimburse dan cash advance menggunakan sistem approve berjenjang.\nAlert:\n1. Over Budget : masuk ke head dept, lalu ke direktur, baru ke Finance\n2. Diatas 5jt : masuk ke head dept, lalu ke direktur, baru ke finance\n2 ini alert ini harus ada",
+      "deskripsiRevisi": "",
+      "PIC": [
+        "Farid",
+        "Bima",
+        "Henry"
+      ],
+      "status": "On Proses",
+      "prioritas": "Urgent",
+      "is_priority": true,
+      "alasanPrioritas": "urgent",
+      "kebijakanGeser": "geser",
+      "lingkupGeser": "semua",
+      "jadwalTerkunci": false,
+      "mulai": "2026-11-09",
+      "durasiHari": 6,
+      "estimasiSelesai": "2026-11-14",
+      "links": [
+        {
+          "id": "link-d8f1785d-ede8-43fb-a4b7-c956cc0a2a0b",
+          "label": "Jenis kategori dan Role user",
+          "url": "https://docs.google.com/spreadsheets/d/1Q7tpay_JTYSrjTpauwHuIie8SIEw9k6O0kZGalxdTEo/edit?gid=0#gid=0"
+        }
+      ],
+      "attachments": [
+        {
+          "id": "e8a7c2fe-d085-4023-a434-ebaccaea1703.pdf",
+          "name": "Dokumen Spesifikasi Fitur Reimburse.pdf",
+          "type": "application/pdf",
+          "size": 337989,
+          "url": "/uploads/e8a7c2fe-d085-4023-a434-ebaccaea1703.pdf"
+        }
+      ],
+      "roadmap": [
+        {
+          "id": "step-mwdsjni4-1",
+          "judul": "Langkah 1",
+          "deskripsi": "Pembuatan endpoint dari BE",
+          "durasiHari": 2,
+          "status": "done",
+          "mulai": "2026-11-09",
+          "selesai": "2026-11-10"
+        },
+        {
+          "id": "step-mwdsk0a8-2",
+          "judul": "Langkah 2",
+          "deskripsi": "Pembuatan ui dari FE",
+          "durasiHari": 2,
+          "status": "done",
+          "mulai": "2026-11-11",
+          "selesai": "2026-11-12"
+        },
+        {
+          "id": "step-mwdskh93-3",
+          "judul": "Langkah 3",
+          "deskripsi": "Review and push Productions",
+          "durasiHari": 2,
+          "status": "progress",
+          "mulai": "2026-11-13",
+          "selesai": "2026-11-14"
+        }
+      ],
+      "createdAt": "2026-11-12T16:58:38.012Z",
+      "updatedAt": "2026-11-12T16:58:38.012Z",
+      "actualStart": "2026-11-12T16:58:38.012Z",
+      "doneAt": null,
+      "urutan": 2,
+      "id": "6a1cnp0mDTA",
+      "tergeserOleh": null,
+      "alasanTergeser": null,
+      "jadwalAsli": null,
+      "jumlahTergeser": 0,
+      "riwayatJadwal": []
+    },
+    {
+      "nama_orang_req": "Pak fegi",
+      "divisi": [
+        "Rapspoint"
+      ],
+      "deskripsi": "untuk monitoring Profit Sell, saat ini untuk Customer Journey masih hanya menampilkan informasi volume transaksinya aja, bisa dibantu tambahkan juga untuk profit transaksinya",
+      "deskripsiRevisi": "",
+      "PIC": [
+        "Farid",
+        "Bima",
+        "Henry"
+      ],
+      "status": "Waiting",
+      "prioritas": "Urgent",
+      "is_priority": true,
+      "alasanPrioritas": "urgent",
+      "kebijakanGeser": "geser",
+      "lingkupGeser": "semua",
+      "jadwalTerkunci": false,
+      "mulai": "2026-11-13",
+      "durasiHari": 1,
+      "estimasiSelesai": "2026-11-13",
+      "links": [],
+      "attachments": [],
+      "roadmap": [
+        {
+          "id": "step-mwdsnim6-4",
+          "judul": "Langkah 1",
+          "deskripsi": "Persiapan pembuatan endpoint untuk menampilkan data dari BE, serta pembuatan UI untuk menampilkan datanya ke user",
+          "durasiHari": 1,
+          "status": "todo",
+          "mulai": "2026-11-13",
+          "selesai": "2026-11-13"
+        }
+      ],
+      "createdAt": "2026-11-12T17:00:35.136Z",
+      "updatedAt": "2026-11-12T17:00:35.136Z",
+      "actualStart": null,
+      "doneAt": null,
+      "urutan": 3,
+      "id": "ROFSMCRhEkU"
+    },
+    {
+      "nama_orang_req": "Yere",
+      "divisi": [
+        "Rapspoint"
+      ],
+      "deskripsi": "Pembuatan ERP sendiri untuk Rapsgear",
+      "deskripsiRevisi": "",
+      "PIC": [
+        "Farid",
+        "Zaky",
+        "Henry"
+      ],
+      "status": "On Proses",
+      "prioritas": "Normal",
+      "is_priority": false,
+      "alasanPrioritas": "",
+      "kebijakanGeser": "geser",
+      "lingkupGeser": "semua",
+      "jadwalTerkunci": false,
+      "mulai": null,
+      "durasiHari": 1,
+      "estimasiSelesai": null,
+      "links": [],
+      "attachments": [],
+      "roadmap": [],
+      "createdAt": "2026-11-12T17:02:10.718Z",
+      "updatedAt": "2026-11-12T17:02:10.718Z",
+      "actualStart": "2026-11-12T17:02:10.718Z",
+      "doneAt": null,
+      "urutan": 4,
+      "id": "ex7bMwDazE8"
+    },
+    {
+      "nama_orang_req": "Razka",
+      "divisi": [
+        "Vender"
+      ],
+      "deskripsi": "Pembuatan website vender dan pembuatan backoffice nya",
+      "deskripsiRevisi": "",
+      "PIC": [
+        "Fajar",
+        "Hanif",
+        "Bagas"
+      ],
+      "status": "On Proses",
+      "prioritas": "Normal",
+      "is_priority": false,
+      "alasanPrioritas": "",
+      "kebijakanGeser": "geser",
+      "lingkupGeser": "semua",
+      "jadwalTerkunci": false,
+      "mulai": "2026-10-23",
+      "durasiHari": 26,
+      "estimasiSelesai": "2026-11-17",
+      "links": [],
+      "attachments": [],
+      "roadmap": [
+        {
+          "id": "step-mwdsrqft-5",
+          "judul": "Langkah 1",
+          "deskripsi": "sliceing UI/UX ke Codingan client",
+          "durasiHari": 6,
+          "status": "done",
+          "mulai": "2026-10-23",
+          "selesai": "2026-10-28"
+        },
+        {
+          "id": "step-mwdss6dh-6",
+          "judul": "Langkah 2",
+          "deskripsi": "Pembuatan API dari Backend untuk backoffice",
+          "durasiHari": 5,
+          "status": "done",
+          "mulai": "2026-10-29",
+          "selesai": "2026-11-02"
+        },
+        {
+          "id": "step-mwdssyxw-7",
+          "judul": "Langkah 3",
+          "deskripsi": "Pembuatan Backoffice dan implementasi API",
+          "durasiHari": 10,
+          "status": "done",
+          "mulai": "2026-11-03",
+          "selesai": "2026-11-12"
+        },
+        {
+          "id": "step-mwdstgdy-8",
+          "judul": "Langkah 4",
+          "deskripsi": "Implementasi Backoffice ke Client",
+          "durasiHari": 3,
+          "status": "done",
+          "mulai": "2026-11-13",
+          "selesai": "2026-11-15"
+        },
+        {
+          "id": "step-mwdsu2c4-9",
+          "judul": "Langkah 5",
+          "deskripsi": "Review",
+          "durasiHari": 1,
+          "status": "done",
+          "mulai": "2026-11-16",
+          "selesai": "2026-11-16"
+        },
+        {
+          "id": "step-mwdsucf5-10",
+          "judul": "Langkah 6",
+          "deskripsi": "naik production",
+          "durasiHari": 1,
+          "status": "progress",
+          "mulai": "2026-11-17",
+          "selesai": "2026-11-17"
+        }
+      ],
+      "createdAt": "2026-11-12T17:06:06.245Z",
+      "updatedAt": "2026-11-12T17:24:47.609Z",
+      "actualStart": "2026-11-12T17:06:23.587Z",
+      "doneAt": null,
+      "urutan": 5,
+      "id": "gb-3LznZLNg",
+      "tergeserOleh": "Nlq1Ad4mRkU",
+      "alasanTergeser": "Tergeser oleh Nuril (Urgent)",
+      "jadwalAsli": null,
+      "jumlahTergeser": 2,
+      "riwayatJadwal": [
+        {
+          "at": "2026-11-12T17:20:24.230Z",
+          "tipe": "keterangan",
+          "olehId": "Zz8xb2N0ESI",
+          "dari": null,
+          "ke": null,
+          "alasan": "Tergeser oleh Pak brian (Urgent)"
+        },
+        {
+          "at": "2026-11-12T17:24:47.609Z",
+          "tipe": "keterangan",
+          "olehId": "Nlq1Ad4mRkU",
+          "dari": null,
+          "ke": null,
+          "alasan": "Tergeser oleh Nuril (Urgent)"
+        }
+      ]
+    },
+    {
+      "nama_orang_req": "Yoel",
+      "divisi": [
+        "Barapoint"
+      ],
+      "deskripsi": "untuk kebutuhan website Barapoint dan tambahan fitur di ERP Barapoint\nWebsite :\n- Revamp Design\n- ⁠Tambahan Fitur Konfirmasi WhatsApp apabila sudah melakukan transaksi",
+      "deskripsiRevisi": "",
+      "PIC": [
+        "Rafly",
+        "Henry"
+      ],
+      "status": "On Proses",
+      "prioritas": "Normal",
+      "is_priority": false,
+      "alasanPrioritas": "",
+      "kebijakanGeser": "geser",
+      "lingkupGeser": "semua",
+      "jadwalTerkunci": false,
+      "mulai": "2026-11-07",
+      "durasiHari": 7,
+      "estimasiSelesai": "2026-11-13",
+      "links": [
+        {
+          "id": "link-b1482d75-23d9-4abf-9430-9cd6b163338b",
+          "label": "Design Figma",
+          "url": "https://www.figma.com/design/OhQUrwC8xhu45uOlh9HCsE/BARAPOINT?node-id=0-1"
+        },
+        {
+          "id": "link-2a0f7714-c08e-417c-8ca7-69842e05fea8",
+          "label": "Template ERP",
+          "url": "https://drive.google.com/drive/folders/1uK6KVKtqKVVunEUlUCQPLNAIwdJ94Iz7"
+        }
+      ],
+      "attachments": [],
+      "roadmap": [
+        {
+          "id": "step-mwdsxvbj-11",
+          "judul": "Langkah 1",
+          "deskripsi": "Sliceing figma to code",
+          "durasiHari": 4,
+          "status": "done",
+          "mulai": "2026-11-07",
+          "selesai": "2026-11-10"
+        },
+        {
+          "id": "step-mwdsy6wa-12",
+          "judul": "Langkah 2",
+          "deskripsi": "penyesuaian endpoint BE",
+          "durasiHari": 1,
+          "status": "done",
+          "mulai": "2026-11-11",
+          "selesai": "2026-11-11"
+        },
+        {
+          "id": "step-mwdsygtq-13",
+          "judul": "Langkah 3",
+          "deskripsi": "review",
+          "durasiHari": 1,
+          "status": "done",
+          "mulai": "2026-11-12",
+          "selesai": "2026-11-12"
+        },
+        {
+          "id": "step-mwdsyr2h-14",
+          "judul": "Langkah 4",
+          "deskripsi": "Naik production",
+          "durasiHari": 1,
+          "status": "progress",
+          "mulai": "2026-11-13",
+          "selesai": "2026-11-13"
+        }
+      ],
+      "createdAt": "2026-11-12T17:09:31.252Z",
+      "updatedAt": "2026-11-12T17:20:24.230Z",
+      "actualStart": "2026-11-12T17:09:31.252Z",
+      "doneAt": null,
+      "urutan": 6,
+      "id": "aIt1vuZ_UuE",
+      "tergeserOleh": "Zz8xb2N0ESI",
+      "alasanTergeser": "Tergeser oleh Pak brian (Urgent)",
+      "jadwalAsli": null,
+      "jumlahTergeser": 1,
+      "riwayatJadwal": [
+        {
+          "at": "2026-11-12T17:20:24.230Z",
+          "tipe": "keterangan",
+          "olehId": "Zz8xb2N0ESI",
+          "dari": null,
+          "ke": null,
+          "alasan": "Tergeser oleh Pak brian (Urgent)"
+        }
+      ]
+    },
+    {
+      "nama_orang_req": "Andika",
+      "divisi": [
+        "Rapspoint"
+      ],
+      "deskripsi": "Pembuatan Fitur khusus Joki untuk memantau skema penjoki",
+      "deskripsiRevisi": "",
+      "PIC": [
+        "Farid",
+        "Bima",
+        "Henry"
+      ],
       "status": "Waiting",
       "prioritas": "Normal",
       "is_priority": false,
@@ -69,65 +409,421 @@
       "kebijakanGeser": "geser",
       "lingkupGeser": "semua",
       "jadwalTerkunci": false,
-      "mulai": "2026-11-06",
-      "durasiHari": 2,
-      "estimasiSelesai": "2026-11-07",
+      "mulai": null,
+      "durasiHari": 1,
+      "estimasiSelesai": null,
+      "links": [
+        {
+          "id": "link-6884174e-c577-4d0c-a0be-fd64bb9a8c7b",
+          "label": "Detail permintaan",
+          "url": "https://docs.google.com/document/d/1mVbVR7UHhSevxMOAku-Le0gZt8Q9hwc11KBrfVPQxBo/edit?pli=1&tab=t.0"
+        }
+      ],
+      "attachments": [],
+      "roadmap": [],
+      "createdAt": "2026-11-12T17:10:50.662Z",
+      "updatedAt": "2026-11-12T17:10:50.662Z",
       "actualStart": null,
-      "tergeserOleh": 1,
-      "alasanTergeser": "Tergeser oleh perbaikan server ERP (Urgent).",
-      "jadwalAsli": {
-        "mulai": "2026-11-04",
-        "estimasiSelesai": "2026-11-05"
-      },
-      "jumlahTergeser": 1,
-      "riwayatJadwal": [
-        {
-          "at": "2026-11-03T00:45:00.000Z",
-          "tipe": "digeser",
-          "olehId": 1,
-          "dari": {
-            "mulai": "2026-11-04",
-            "estimasiSelesai": "2026-11-05"
-          },
-          "ke": {
-            "mulai": "2026-11-06",
-            "estimasiSelesai": "2026-11-07"
-          },
-          "alasan": "Tergeser oleh perbaikan server ERP (Urgent)."
-        }
-      ],
-      "roadmap": [
-        {
-          "id": "step-stok-1",
-          "judul": "Backup data & aplikasi lama",
-          "deskripsi": "",
-          "durasiHari": 1,
-          "status": "todo",
-          "mulai": "2026-11-06",
-          "selesai": "2026-11-06"
-        },
-        {
-          "id": "step-stok-2",
-          "judul": "Deploy versi baru & uji coba",
-          "deskripsi": "",
-          "durasiHari": 1,
-          "status": "todo",
-          "mulai": "2026-11-07",
-          "selesai": "2026-11-07"
-        }
-      ],
-      "urutan": 3,
-      "createdAt": "2026-11-02T03:00:00.000Z",
-      "updatedAt": "2026-11-03T00:45:00.000Z",
-      "doneAt": null
+      "doneAt": null,
+      "urutan": 7,
+      "id": "StKWXUlvpcY"
     },
     {
-      "id": 3,
-      "nama_orang_req": "Sari",
-      "divisi": ["Station"],
-      "deskripsi": "Printer kasir tidak bisa mencetak struk.",
-      "PIC": ["Rizal"],
+      "nama_orang_req": "Fahri",
+      "divisi": [
+        "FMI"
+      ],
+      "deskripsi": "Pembuatan website khusus FMI",
+      "deskripsiRevisi": "",
+      "PIC": [
+        "Farid",
+        "Bima"
+      ],
       "status": "Waiting",
+      "prioritas": "Normal",
+      "is_priority": false,
+      "alasanPrioritas": "",
+      "kebijakanGeser": "geser",
+      "lingkupGeser": "semua",
+      "jadwalTerkunci": false,
+      "mulai": null,
+      "durasiHari": 1,
+      "estimasiSelesai": null,
+      "links": [],
+      "attachments": [],
+      "roadmap": [],
+      "createdAt": "2026-11-12T17:11:28.655Z",
+      "updatedAt": "2026-11-12T17:11:28.655Z",
+      "actualStart": null,
+      "doneAt": null,
+      "urutan": 8,
+      "id": "6ofXkQsKsIg"
+    },
+    {
+      "nama_orang_req": "Eldzan",
+      "divisi": [
+        "Aoshi"
+      ],
+      "deskripsi": "web Aoshi Penambahan fitur top up",
+      "deskripsiRevisi": "",
+      "PIC": [
+        "Fajar",
+        "Bagas"
+      ],
+      "status": "Waiting",
+      "prioritas": "Normal",
+      "is_priority": false,
+      "alasanPrioritas": "",
+      "kebijakanGeser": "geser",
+      "lingkupGeser": "semua",
+      "jadwalTerkunci": false,
+      "mulai": null,
+      "durasiHari": 1,
+      "estimasiSelesai": null,
+      "links": [],
+      "attachments": [],
+      "roadmap": [],
+      "createdAt": "2026-11-12T17:12:11.980Z",
+      "updatedAt": "2026-11-12T17:12:56.958Z",
+      "actualStart": null,
+      "doneAt": null,
+      "urutan": 9,
+      "id": "4JODsEYH7w8",
+      "tergeserOleh": null,
+      "alasanTergeser": null,
+      "jadwalAsli": null,
+      "jumlahTergeser": 0,
+      "riwayatJadwal": []
+    },
+    {
+      "nama_orang_req": "Piko",
+      "divisi": [
+        "FMI"
+      ],
+      "deskripsi": "Penambahan fitur kategori kartu di Erp footballmarket",
+      "deskripsiRevisi": "",
+      "PIC": [
+        "Farid",
+        "Bima"
+      ],
+      "status": "Waiting",
+      "prioritas": "Normal",
+      "is_priority": false,
+      "alasanPrioritas": "",
+      "kebijakanGeser": "geser",
+      "lingkupGeser": "semua",
+      "jadwalTerkunci": false,
+      "mulai": null,
+      "durasiHari": 1,
+      "estimasiSelesai": null,
+      "links": [],
+      "attachments": [],
+      "roadmap": [],
+      "createdAt": "2026-11-12T17:13:34.361Z",
+      "updatedAt": "2026-11-12T17:13:34.361Z",
+      "actualStart": null,
+      "doneAt": null,
+      "urutan": 10,
+      "id": "mLX4RvVOUyE"
+    },
+    {
+      "nama_orang_req": "Divisi Editor",
+      "divisi": [
+        "Rapspoint",
+        "Vender",
+        "Barapoint",
+        "FMI",
+        "Aoshi",
+        "Station"
+      ],
+      "deskripsi": "Pembuatan fitur atau erp sendiri untuk editor",
+      "deskripsiRevisi": "",
+      "PIC": [
+        "Farid",
+        "Bima"
+      ],
+      "status": "Waiting",
+      "prioritas": "Normal",
+      "is_priority": false,
+      "alasanPrioritas": "",
+      "kebijakanGeser": "geser",
+      "lingkupGeser": "semua",
+      "jadwalTerkunci": false,
+      "mulai": null,
+      "durasiHari": 1,
+      "estimasiSelesai": null,
+      "links": [],
+      "attachments": [],
+      "roadmap": [],
+      "createdAt": "2026-11-12T17:14:24.608Z",
+      "updatedAt": "2026-11-12T17:14:24.608Z",
+      "actualStart": null,
+      "doneAt": null,
+      "urutan": 11,
+      "id": "YZSGK8vt2Sg"
+    },
+    {
+      "nama_orang_req": "Eldzan",
+      "divisi": [
+        "Aoshi"
+      ],
+      "deskripsi": "req fitur baru di erp, penambahan filter monitoring margin profit untuk akun lama karena mau kita bedakan untuk margin di setiap umur akun",
+      "deskripsiRevisi": "",
+      "PIC": [
+        "Farid",
+        "Bima"
+      ],
+      "status": "Waiting",
+      "prioritas": "Normal",
+      "is_priority": false,
+      "alasanPrioritas": "",
+      "kebijakanGeser": "geser",
+      "lingkupGeser": "semua",
+      "jadwalTerkunci": false,
+      "mulai": null,
+      "durasiHari": 1,
+      "estimasiSelesai": null,
+      "links": [],
+      "attachments": [],
+      "roadmap": [],
+      "createdAt": "2026-11-12T17:15:16.293Z",
+      "updatedAt": "2026-11-12T17:15:16.293Z",
+      "actualStart": null,
+      "doneAt": null,
+      "urutan": 12,
+      "id": "XKHO5n5-jDc"
+    },
+    {
+      "nama_orang_req": "Bahy",
+      "divisi": [
+        "Rapspoint"
+      ],
+      "deskripsi": "Pada Fitur request pembayaran ketika submit buatkan notifikasi ke telenya mas bahy kalau ada request pembayaran",
+      "deskripsiRevisi": "",
+      "PIC": [
+        "Farid",
+        "Bima"
+      ],
+      "status": "Waiting",
+      "prioritas": "Normal",
+      "is_priority": false,
+      "alasanPrioritas": "",
+      "kebijakanGeser": "geser",
+      "lingkupGeser": "semua",
+      "jadwalTerkunci": false,
+      "mulai": null,
+      "durasiHari": 1,
+      "estimasiSelesai": null,
+      "links": [],
+      "attachments": [],
+      "roadmap": [],
+      "createdAt": "2026-11-12T17:15:45.094Z",
+      "updatedAt": "2026-11-12T17:15:45.094Z",
+      "actualStart": null,
+      "doneAt": null,
+      "urutan": 13,
+      "id": "eZwHp8m1AP4"
+    },
+    {
+      "nama_orang_req": "Nuril",
+      "divisi": [
+        "Rapspoint"
+      ],
+      "deskripsi": "Penmabahan metode closing di input take dan input sell serta bisa dipantau di monitoring",
+      "deskripsiRevisi": "",
+      "PIC": [
+        "Farid",
+        "Bima"
+      ],
+      "status": "Waiting",
+      "prioritas": "Normal",
+      "is_priority": false,
+      "alasanPrioritas": "",
+      "kebijakanGeser": "geser",
+      "lingkupGeser": "semua",
+      "jadwalTerkunci": false,
+      "mulai": null,
+      "durasiHari": 1,
+      "estimasiSelesai": null,
+      "links": [],
+      "attachments": [],
+      "roadmap": [],
+      "createdAt": "2026-11-12T17:16:25.289Z",
+      "updatedAt": "2026-11-12T17:16:25.289Z",
+      "actualStart": null,
+      "doneAt": null,
+      "urutan": 14,
+      "id": "QXju-X8S_sE"
+    },
+    {
+      "nama_orang_req": "Kio",
+      "divisi": [
+        "Aoshi",
+        "Rapspoint",
+        "Vender",
+        "Barapoint"
+      ],
+      "deskripsi": "Fitur notifikasi di ERP dapat memberikan awarness informasi login admin di luar kantor, Fungsi utamanya agar Team leader bisa mengetahui lebih dahulu terkait peng akses an sistem ERP di luar jam shift admin tersebut.",
+      "deskripsiRevisi": "",
+      "PIC": [
+        "Fajar",
+        "Farid",
+        "Bima",
+        "Bagas",
+        "Henry"
+      ],
+      "status": "Waiting",
+      "prioritas": "Normal",
+      "is_priority": false,
+      "alasanPrioritas": "",
+      "kebijakanGeser": "geser",
+      "lingkupGeser": "semua",
+      "jadwalTerkunci": false,
+      "mulai": null,
+      "durasiHari": 1,
+      "estimasiSelesai": null,
+      "links": [],
+      "attachments": [],
+      "roadmap": [],
+      "createdAt": "2026-11-12T17:17:12.970Z",
+      "updatedAt": "2026-11-12T17:17:12.970Z",
+      "actualStart": null,
+      "doneAt": null,
+      "urutan": 15,
+      "id": "LA5Bi2unzyA"
+    },
+    {
+      "nama_orang_req": "Nuril",
+      "divisi": [
+        "Rapspoint"
+      ],
+      "deskripsi": "Pembuatan ERP PUBG untuk RAPSPOINT",
+      "deskripsiRevisi": "",
+      "PIC": [
+        "Farid",
+        "Bima"
+      ],
+      "status": "Pending",
+      "prioritas": "Normal",
+      "is_priority": false,
+      "alasanPrioritas": "",
+      "kebijakanGeser": "geser",
+      "lingkupGeser": "semua",
+      "jadwalTerkunci": false,
+      "mulai": null,
+      "durasiHari": 1,
+      "estimasiSelesai": null,
+      "links": [],
+      "attachments": [],
+      "roadmap": [],
+      "createdAt": "2026-11-12T17:17:48.654Z",
+      "updatedAt": "2026-11-12T17:17:48.654Z",
+      "actualStart": null,
+      "doneAt": null,
+      "urutan": 16,
+      "id": "cx_MYub-NCY"
+    },
+    {
+      "nama_orang_req": "Nuril",
+      "divisi": [
+        "Barapoint"
+      ],
+      "deskripsi": "Pembuatan ERP PUBG untuk BARAPOINT",
+      "deskripsiRevisi": "",
+      "PIC": [
+        "Farid",
+        "Bima",
+        "Henry"
+      ],
+      "status": "Pending",
+      "prioritas": "Normal",
+      "is_priority": false,
+      "alasanPrioritas": "",
+      "kebijakanGeser": "geser",
+      "lingkupGeser": "semua",
+      "jadwalTerkunci": false,
+      "mulai": null,
+      "durasiHari": 1,
+      "estimasiSelesai": null,
+      "links": [],
+      "attachments": [],
+      "roadmap": [],
+      "createdAt": "2026-11-12T17:18:21.233Z",
+      "updatedAt": "2026-11-12T17:18:21.233Z",
+      "actualStart": null,
+      "doneAt": null,
+      "urutan": 17,
+      "id": "5dvV-I45MUk"
+    },
+    {
+      "nama_orang_req": "Pak brian",
+      "divisi": [
+        "Rapspoint"
+      ],
+      "deskripsi": "Pembuatan roundrobin BA, permintaan penyimpanan, permintaan wa barantum di fokuskan ke broadcast (dari data customer yang belum closing)",
+      "deskripsiRevisi": "",
+      "PIC": [
+        "Farid",
+        "Bima",
+        "Henry"
+      ],
+      "status": "Done",
+      "prioritas": "Urgent",
+      "is_priority": true,
+      "alasanPrioritas": "urgent",
+      "kebijakanGeser": "geser",
+      "lingkupGeser": "semua",
+      "jadwalTerkunci": false,
+      "mulai": "2026-11-11",
+      "durasiHari": 2,
+      "estimasiSelesai": "2026-11-12",
+      "links": [],
+      "attachments": [],
+      "roadmap": [
+        {
+          "id": "step-mwdtbwl8-15",
+          "judul": "Langkah 1",
+          "deskripsi": "Pembuatan endpoint BE",
+          "durasiHari": 1,
+          "status": "done",
+          "mulai": "2026-11-11",
+          "selesai": "2026-11-11"
+        },
+        {
+          "id": "step-mwdtc7dy-16",
+          "judul": "Langkah 2",
+          "deskripsi": "Pembuatan tampilan FE",
+          "durasiHari": 1,
+          "status": "done",
+          "mulai": "2026-11-12",
+          "selesai": "2026-11-12"
+        }
+      ],
+      "createdAt": "2026-11-12T17:19:52.673Z",
+      "updatedAt": "2026-11-12T17:20:21.145Z",
+      "actualStart": null,
+      "doneAt": "2026-11-12T17:19:52.673Z",
+      "urutan": 18,
+      "id": "Zz8xb2N0ESI",
+      "tergeserOleh": null,
+      "alasanTergeser": null,
+      "jadwalAsli": null,
+      "jumlahTergeser": 0,
+      "riwayatJadwal": []
+    },
+    {
+      "nama_orang_req": "Ardi",
+      "divisi": [
+        "Rapspoint",
+        "Station"
+      ],
+      "deskripsi": "Penambahan diskon untuk rental PS dan PC.\nPS Minimal main 3 jam dan PC Minimal main 10 jam.\nPS 4 = 3000, PS 5 = 5000",
+      "deskripsiRevisi": "",
+      "PIC": [
+        "Bagas",
+        "Fajar"
+      ],
+      "status": "Done",
       "prioritas": "Normal",
       "is_priority": false,
       "alasanPrioritas": "",
@@ -137,90 +833,27 @@
       "mulai": "2026-11-10",
       "durasiHari": 1,
       "estimasiSelesai": "2026-11-10",
+      "links": [],
+      "attachments": [],
+      "roadmap": [],
+      "createdAt": "2026-11-12T17:21:22.482Z",
+      "updatedAt": "2026-11-12T17:21:22.482Z",
       "actualStart": null,
-      "tergeserOleh": 1,
-      "alasanTergeser": "Tergeser oleh perbaikan server ERP (Urgent).",
-      "jadwalAsli": {
-        "mulai": "2026-11-05",
-        "estimasiSelesai": "2026-11-05"
-      },
-      "jumlahTergeser": 1,
-      "riwayatJadwal": [
-        {
-          "at": "2026-11-03T00:45:00.000Z",
-          "tipe": "digeser",
-          "olehId": 1,
-          "dari": {
-            "mulai": "2026-11-05",
-            "estimasiSelesai": "2026-11-05"
-          },
-          "ke": {
-            "mulai": "2026-11-10",
-            "estimasiSelesai": "2026-11-10"
-          },
-          "alasan": "Tergeser oleh perbaikan server ERP (Urgent)."
-        }
-      ],
-      "roadmap": [
-        {
-          "id": "step-printer-1",
-          "judul": "Cek koneksi & driver printer",
-          "deskripsi": "",
-          "durasiHari": 1,
-          "status": "todo",
-          "mulai": "2026-11-10",
-          "selesai": "2026-11-10"
-        }
-      ],
-      "urutan": 4,
-      "createdAt": "2026-11-02T04:00:00.000Z",
-      "updatedAt": "2026-11-03T00:45:00.000Z",
-      "doneAt": null
+      "doneAt": "2026-11-12T17:21:22.482Z",
+      "urutan": 19,
+      "id": "pI_cfmel67g"
     },
     {
-      "id": 4,
-      "nama_orang_req": "Rina",
-      "divisi": ["Rapspoint"],
-      "deskripsi": "Permintaan akun baru untuk staf administrasi.",
-      "PIC": ["Bima"],
-      "status": "Pending",
-      "prioritas": "Tinggi",
-      "is_priority": true,
-      "alasanPrioritas": "Staf baru mulai bekerja minggu depan.",
-      "kebijakanGeser": "geser",
-      "lingkupGeser": "semua",
-      "jadwalTerkunci": false,
-      "mulai": "2026-11-11",
-      "durasiHari": 1,
-      "estimasiSelesai": "2026-11-11",
-      "actualStart": null,
-      "tergeserOleh": null,
-      "alasanTergeser": null,
-      "jadwalAsli": null,
-      "jumlahTergeser": 0,
-      "riwayatJadwal": [],
-      "roadmap": [
-        {
-          "id": "step-akun-1",
-          "judul": "Buat akun & atur hak akses",
-          "deskripsi": "Menunggu persetujuan atasan.",
-          "durasiHari": 1,
-          "status": "todo",
-          "mulai": "2026-11-11",
-          "selesai": "2026-11-11"
-        }
+      "nama_orang_req": "Eldzan",
+      "divisi": [
+        "Aoshi"
       ],
-      "urutan": 2,
-      "createdAt": "2026-11-02T05:00:00.000Z",
-      "updatedAt": "2026-11-02T05:00:00.000Z",
-      "doneAt": null
-    },
-    {
-      "id": 5,
-      "nama_orang_req": "Dedi",
-      "divisi": ["Vender"],
-      "deskripsi": "Install ulang laptop kasir yang lemot.",
-      "PIC": ["Rizal"],
+      "deskripsi": "Update Revisi:\n- Customer Service Itu Per Game ada turunan buttonnya\n- Customer Service ver HP kegedean\n- Footer diganti logo baru\n- Logo URL juga diganti ke yg baru\n- Button \"beli akun via web\" di homepage salah mas journeynya seharusnya langsung ke pilihan gamenya\n- Gudang Stok ver hp yg teks Gudang Stock diturunin 2px juga mas",
+      "deskripsiRevisi": "",
+      "PIC": [
+        "Fajar",
+        "Bagas"
+      ],
       "status": "Done",
       "prioritas": "Normal",
       "is_priority": false,
@@ -228,69 +861,406 @@
       "kebijakanGeser": "geser",
       "lingkupGeser": "semua",
       "jadwalTerkunci": false,
-      "mulai": "2026-10-28",
-      "durasiHari": 2,
-      "estimasiSelesai": "2026-10-29",
-      "actualStart": "2026-10-28T02:00:00.000Z",
+      "mulai": "2026-11-05",
+      "durasiHari": 1,
+      "estimasiSelesai": "2026-11-05",
+      "links": [],
+      "attachments": [],
+      "roadmap": [],
+      "createdAt": "2026-11-12T17:22:16.569Z",
+      "updatedAt": "2026-11-12T17:22:16.569Z",
+      "actualStart": null,
+      "doneAt": "2026-11-12T17:22:16.569Z",
+      "urutan": 20,
+      "id": "EXAiWo_SEj0"
+    },
+    {
+      "nama_orang_req": "Nuril",
+      "divisi": [
+        "Rapspoint"
+      ],
+      "deskripsi": "Pembuatan alur untuk Claim Garansi untuk Rapspoint",
+      "deskripsiRevisi": "",
+      "PIC": [
+        "Farid",
+        "Bima",
+        "Bagas",
+        "Rafly",
+        "Henry",
+        "Hanif"
+      ],
+      "status": "Done",
+      "prioritas": "Urgent",
+      "is_priority": true,
+      "alasanPrioritas": "Request management dan harus segera digunakan untuk mencegah klaim garansi tidak resmi",
+      "kebijakanGeser": "geser",
+      "lingkupGeser": "semua",
+      "jadwalTerkunci": false,
+      "mulai": "2026-10-31",
+      "durasiHari": 4,
+      "estimasiSelesai": "2026-11-03",
+      "links": [
+        {
+          "id": "link-740017ca-9bac-43c6-8a3b-66b281de9a74",
+          "label": "Design figma",
+          "url": "https://t21dohy/UI-UX?node-id=0-1&t=M8U1pVERZP8LjwvM-1"
+        }
+      ],
+      "attachments": [],
+      "roadmap": [
+        {
+          "id": "step-mwdthkkw-17",
+          "judul": "Langkah 1",
+          "deskripsi": "Brief keperluan pembuatan fitur garansi",
+          "durasiHari": 1,
+          "status": "done",
+          "mulai": "2026-10-31",
+          "selesai": "2026-10-31"
+        },
+        {
+          "id": "step-mwdthrgy-18",
+          "judul": "Langkah 2",
+          "deskripsi": "Pembuatan UI/UX",
+          "durasiHari": 1,
+          "status": "done",
+          "mulai": "2026-11-01",
+          "selesai": "2026-11-01"
+        },
+        {
+          "id": "step-mwdthywo-19",
+          "judul": "Langkah 3",
+          "deskripsi": "Pembuatan Backend API untuk Frontend",
+          "durasiHari": 1,
+          "status": "done",
+          "mulai": "2026-11-02",
+          "selesai": "2026-11-02"
+        },
+        {
+          "id": "step-mwdti6u5-20",
+          "judul": "Langkah 4",
+          "deskripsi": "Implementasi ke FE ( ERP dan Website rapspoint )",
+          "durasiHari": 1,
+          "status": "done",
+          "mulai": "2026-11-03",
+          "selesai": "2026-11-03"
+        }
+      ],
+      "createdAt": "2026-11-12T17:24:45.853Z",
+      "updatedAt": "2026-11-12T17:24:45.853Z",
+      "actualStart": null,
+      "doneAt": "2026-11-12T17:24:45.853Z",
+      "urutan": 21,
+      "id": "Nlq1Ad4mRkU"
+    },
+    {
+      "nama_orang_req": "Nuril",
+      "divisi": [
+        "Rapspoint"
+      ],
+      "deskripsi": "Pembuatan Fitur Insentif untuk di pakai oleh admin dalam perhitungan insentif",
+      "deskripsiRevisi": "",
+      "PIC": [
+        "Farid",
+        "Bima",
+        "Henry"
+      ],
+      "status": "Done",
+      "prioritas": "Urgent",
+      "is_priority": true,
+      "alasanPrioritas": "Harus segera digunakan untuk para admin agar sistem pembayaran insentif jelas dan transparant",
+      "kebijakanGeser": "geser",
+      "lingkupGeser": "semua",
+      "jadwalTerkunci": false,
+      "mulai": "2026-10-11",
+      "durasiHari": 8,
+      "estimasiSelesai": "2026-10-18",
+      "links": [],
+      "attachments": [],
+      "roadmap": [
+        {
+          "id": "step-mwdtkafy-21",
+          "judul": "Langkah 1",
+          "deskripsi": "Pembuatan API dari Backend",
+          "durasiHari": 4,
+          "status": "done",
+          "mulai": "2026-10-11",
+          "selesai": "2026-10-14"
+        },
+        {
+          "id": "step-mwdtkmyr-22",
+          "judul": "Langkah 2",
+          "deskripsi": "Pembuatan UI sekaligus implementasi",
+          "durasiHari": 4,
+          "status": "done",
+          "mulai": "2026-10-15",
+          "selesai": "2026-10-18"
+        }
+      ],
+      "createdAt": "2026-11-12T17:26:25.949Z",
+      "updatedAt": "2026-11-12T17:26:49.725Z",
+      "actualStart": null,
+      "doneAt": "2026-11-12T17:26:25.949Z",
+      "urutan": 22,
+      "id": "LRz1YMxGBlA",
       "tergeserOleh": null,
       "alasanTergeser": null,
       "jadwalAsli": null,
       "jumlahTergeser": 0,
-      "riwayatJadwal": [],
-      "roadmap": [
-        {
-          "id": "step-laptop-1",
-          "judul": "Backup data pengguna",
-          "deskripsi": "",
-          "durasiHari": 1,
-          "status": "done",
-          "mulai": "2026-10-28",
-          "selesai": "2026-10-28"
-        },
-        {
-          "id": "step-laptop-2",
-          "judul": "Install ulang & restore data",
-          "deskripsi": "",
-          "durasiHari": 1,
-          "status": "done",
-          "mulai": "2026-10-29",
-          "selesai": "2026-10-29"
-        }
+      "riwayatJadwal": []
+    },
+    {
+      "nama_orang_req": "Nuril",
+      "divisi": [
+        "Rapspoint"
       ],
-      "urutan": 5,
-      "createdAt": "2026-10-27T02:00:00.000Z",
-      "updatedAt": "2026-10-29T09:00:00.000Z",
-      "doneAt": "2026-10-29T09:00:00.000Z"
+      "deskripsi": "Pembuatan ERP terpisah untuk ERP EFO RAPSPOINT",
+      "deskripsiRevisi": "",
+      "PIC": [
+        "Farid",
+        "Bima",
+        "Henry"
+      ],
+      "status": "Done",
+      "prioritas": "Urgent",
+      "is_priority": true,
+      "alasanPrioritas": "urgent",
+      "kebijakanGeser": "geser",
+      "lingkupGeser": "semua",
+      "jadwalTerkunci": false,
+      "mulai": null,
+      "durasiHari": 1,
+      "estimasiSelesai": null,
+      "links": [],
+      "attachments": [],
+      "roadmap": [],
+      "createdAt": "2026-11-12T17:27:48.304Z",
+      "updatedAt": "2026-11-12T17:27:48.304Z",
+      "actualStart": null,
+      "doneAt": "2026-11-12T17:27:48.304Z",
+      "urutan": 23,
+      "id": "sAHAWOcHCdc"
+    },
+    {
+      "nama_orang_req": "Nuril",
+      "divisi": [
+        "Rapspoint"
+      ],
+      "deskripsi": "Pembuatan ERP terpisah untuk ERP EFB RAPSPOINT",
+      "deskripsiRevisi": "",
+      "PIC": [
+        "Farid",
+        "Bima",
+        "Henry"
+      ],
+      "status": "Done",
+      "prioritas": "Normal",
+      "is_priority": false,
+      "alasanPrioritas": "",
+      "kebijakanGeser": "geser",
+      "lingkupGeser": "semua",
+      "jadwalTerkunci": false,
+      "mulai": null,
+      "durasiHari": 1,
+      "estimasiSelesai": null,
+      "links": [],
+      "attachments": [],
+      "roadmap": [],
+      "createdAt": "2026-11-12T17:28:22.804Z",
+      "updatedAt": "2026-11-12T17:28:22.804Z",
+      "actualStart": null,
+      "doneAt": "2026-11-12T17:28:22.804Z",
+      "urutan": 24,
+      "id": "bfJH91okNco"
+    },
+    {
+      "nama_orang_req": "Farah",
+      "divisi": [
+        "Rapspoint"
+      ],
+      "deskripsi": "Pembuatan sistem HRIS",
+      "deskripsiRevisi": "",
+      "PIC": [
+        "Zaky",
+        "Farid"
+      ],
+      "status": "Done",
+      "prioritas": "Normal",
+      "is_priority": false,
+      "alasanPrioritas": "",
+      "kebijakanGeser": "geser",
+      "lingkupGeser": "semua",
+      "jadwalTerkunci": false,
+      "mulai": null,
+      "durasiHari": 1,
+      "estimasiSelesai": null,
+      "links": [],
+      "attachments": [],
+      "roadmap": [],
+      "createdAt": "2026-11-12T17:28:57.914Z",
+      "updatedAt": "2026-11-12T17:28:57.914Z",
+      "actualStart": null,
+      "doneAt": "2026-11-12T17:28:57.914Z",
+      "urutan": 25,
+      "id": "jY206e2KMH0"
+    },
+    {
+      "nama_orang_req": "Nuril",
+      "divisi": [
+        "Rapspoint"
+      ],
+      "deskripsi": "Implementasi live chat Tawk To",
+      "deskripsiRevisi": "",
+      "PIC": [
+        "Bagas",
+        "Henry"
+      ],
+      "status": "Done",
+      "prioritas": "Normal",
+      "is_priority": false,
+      "alasanPrioritas": "",
+      "kebijakanGeser": "geser",
+      "lingkupGeser": "semua",
+      "jadwalTerkunci": false,
+      "mulai": null,
+      "durasiHari": 1,
+      "estimasiSelesai": null,
+      "links": [],
+      "attachments": [],
+      "roadmap": [],
+      "createdAt": "2026-11-12T17:29:39.680Z",
+      "updatedAt": "2026-11-12T17:29:39.680Z",
+      "actualStart": null,
+      "doneAt": "2026-11-12T17:29:39.680Z",
+      "urutan": 26,
+      "id": "7tSXQmsdiFc"
+    },
+    {
+      "nama_orang_req": "Pak Rian",
+      "divisi": [
+        "Rapspoint"
+      ],
+      "deskripsi": "Revamp website utama rapspoint.com",
+      "deskripsiRevisi": "",
+      "PIC": [
+        "Rafly",
+        "Bagas",
+        "Henry"
+      ],
+      "status": "Done",
+      "prioritas": "Urgent",
+      "is_priority": true,
+      "alasanPrioritas": "urgent",
+      "kebijakanGeser": "geser",
+      "lingkupGeser": "semua",
+      "jadwalTerkunci": false,
+      "mulai": null,
+      "durasiHari": 1,
+      "estimasiSelesai": null,
+      "links": [],
+      "attachments": [],
+      "roadmap": [],
+      "createdAt": "2026-11-12T17:30:44.889Z",
+      "updatedAt": "2026-11-12T17:30:44.889Z",
+      "actualStart": null,
+      "doneAt": "2026-11-12T17:30:44.889Z",
+      "urutan": 27,
+      "id": "BqGAnpCnlNM"
+    },
+    {
+      "nama_orang_req": "Nuril",
+      "divisi": [
+        "Rapspoint"
+      ],
+      "deskripsi": "Penambahan fitur round robin wa untuk eskalasi customer",
+      "deskripsiRevisi": "",
+      "PIC": [
+        "Bagas",
+        "Fajar",
+        "Bima",
+        "Farid",
+        "Henry"
+      ],
+      "status": "Done",
+      "prioritas": "Urgent",
+      "is_priority": true,
+      "alasanPrioritas": "urgent",
+      "kebijakanGeser": "geser",
+      "lingkupGeser": "semua",
+      "jadwalTerkunci": false,
+      "mulai": null,
+      "durasiHari": 1,
+      "estimasiSelesai": null,
+      "links": [],
+      "attachments": [],
+      "roadmap": [],
+      "createdAt": "2026-11-12T17:32:23.419Z",
+      "updatedAt": "2026-11-12T17:32:23.419Z",
+      "actualStart": null,
+      "doneAt": "2026-11-12T17:32:23.419Z",
+      "urutan": 28,
+      "id": "Q1WmyIEidnU"
     }
   ],
   "pics": [
     {
-      "id": 1,
+      "id": "1",
       "nama": "Bima",
       "role": "BE",
       "createdAt": "2026-10-20T02:00:00.000Z",
       "updatedAt": "2026-10-20T02:00:00.000Z"
     },
     {
-      "id": 2,
-      "nama": "Rizal",
+      "nama": "Zaky",
       "role": "BE",
-      "createdAt": "2026-10-20T02:00:00.000Z",
-      "updatedAt": "2026-10-20T02:00:00.000Z"
+      "updatedAt": "2026-11-12T16:50:45.551Z",
+      "id": "2"
     },
     {
-      "id": 3,
-      "nama": "Sinta",
+      "nama": "Farid",
       "role": "FE",
-      "createdAt": "2026-10-20T02:00:00.000Z",
-      "updatedAt": "2026-10-20T02:00:00.000Z"
+      "updatedAt": "2026-11-12T16:50:26.598Z",
+      "id": "3"
     },
     {
-      "id": 4,
-      "nama": "Raka",
+      "nama": "Henry",
       "role": "KADIV",
-      "createdAt": "2026-10-20T02:00:00.000Z",
-      "updatedAt": "2026-10-20T02:00:00.000Z"
+      "updatedAt": "2026-11-12T16:50:57.961Z",
+      "id": "4"
+    },
+    {
+      "nama": "Rafly",
+      "role": "FE",
+      "createdAt": "2026-11-12T16:51:24.161Z",
+      "updatedAt": "2026-11-12T16:51:24.161Z",
+      "id": "2h8ymjmOTyU"
+    },
+    {
+      "nama": "Rafely",
+      "role": "DBA",
+      "createdAt": "2026-11-12T16:51:36.623Z",
+      "updatedAt": "2026-11-12T16:51:36.623Z",
+      "id": "-rWaeM4cXek"
+    },
+    {
+      "nama": "Hanif",
+      "role": "UI/UX",
+      "createdAt": "2026-11-12T16:51:46.351Z",
+      "updatedAt": "2026-11-12T16:51:46.351Z",
+      "id": "87gtVApMWA4"
+    },
+    {
+      "nama": "Fajar",
+      "role": "FE",
+      "createdAt": "2026-11-12T16:52:05.727Z",
+      "updatedAt": "2026-11-12T16:52:05.727Z",
+      "id": "mqbv0TJgsB4"
+    },
+    {
+      "nama": "Bagas",
+      "role": "BE",
+      "createdAt": "2026-11-12T17:12:26.929Z",
+      "updatedAt": "2026-11-12T17:12:26.929Z",
+      "id": "JxqjVuxT0zk"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"

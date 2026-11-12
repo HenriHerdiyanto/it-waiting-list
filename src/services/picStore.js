@@ -69,6 +69,21 @@ export async function loadPicStore() {
   try {
     const raw = await fetchPics();
     const pics = Array.isArray(raw) ? raw.map(normalizePic) : [];
+
+    // Jika endpoint mengembalikan array kosong, jangan percaya mode api.
+    // Tetap pakai localStorage agar data PIC yang sudah diimpor tidak hilang
+    // setiap kali project dijalankan ulang.
+    if (pics.length === 0) {
+      return {
+        pics: sortPics(readLocalPics()),
+        mode: 'local',
+        error: '',
+      };
+    }
+
+    // Simpan salinan ke localStorage agar tetap ada walaupun endpoint tidak
+    // tersedia pada saat load berikutnya.
+    writeLocalPics(pics);
     return { pics: sortPics(pics), mode: 'api', error: '' };
   } catch (error) {
     return {

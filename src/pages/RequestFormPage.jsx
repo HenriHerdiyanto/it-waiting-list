@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import RequestForm from '../components/RequestForm';
+import WaPasteImport from '../components/WaPasteImport';
 import ShiftImpactDialog from '../components/ShiftImpactDialog';
 import { ErrorState, LoadingState } from '../components/Feedback';
 import { useData } from '../contexts/DataContext';
@@ -36,6 +37,11 @@ function RequestFormScreen({ existing }) {
 
   const handleChange = (field, value) => {
     setForm((previous) => ({ ...previous, [field]: value }));
+  };
+
+  const handleApplyFromWa = (fields) => {
+    setForm((previous) => ({ ...previous, ...fields }));
+    notify('Form terisi dari chat WhatsApp. Periksa lagi sebelum menyimpan.', 'success');
   };
 
   const handleSubmit = async (event) => {
@@ -133,6 +139,10 @@ function RequestFormScreen({ existing }) {
           ← Kembali
         </Link>
       </div>
+
+      {!existing && (
+        <WaPasteImport form={form} disabled={saving || uploading} onApply={handleApplyFromWa} />
+      )}
 
       <RequestForm
         key={existing?.id ?? 'new'}
