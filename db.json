@@ -154,7 +154,12 @@
       "actualStart": null,
       "doneAt": null,
       "urutan": 3,
-      "id": "ROFSMCRhEkU"
+      "id": "ROFSMCRhEkU",
+      "tergeserOleh": null,
+      "alasanTergeser": null,
+      "jadwalAsli": null,
+      "jumlahTergeser": 0,
+      "riwayatJadwal": []
     },
     {
       "nama_orang_req": "Yere",
@@ -185,8 +190,13 @@
       "updatedAt": "2026-11-12T17:02:10.718Z",
       "actualStart": "2026-11-12T17:02:10.718Z",
       "doneAt": null,
-      "urutan": 4,
-      "id": "ex7bMwDazE8"
+      "urutan": 10,
+      "id": "ex7bMwDazE8",
+      "tergeserOleh": null,
+      "alasanTergeser": null,
+      "jadwalAsli": null,
+      "jumlahTergeser": 0,
+      "riwayatJadwal": []
     },
     {
       "nama_orang_req": "Razka",
@@ -272,7 +282,7 @@
       "updatedAt": "2026-11-12T17:24:47.609Z",
       "actualStart": "2026-11-12T17:06:23.587Z",
       "doneAt": null,
-      "urutan": 5,
+      "urutan": 11,
       "id": "gb-3LznZLNg",
       "tergeserOleh": "Nlq1Ad4mRkU",
       "alasanTergeser": "Tergeser oleh Nuril (Urgent)",
@@ -373,7 +383,7 @@
       "updatedAt": "2026-11-12T17:20:24.230Z",
       "actualStart": "2026-11-12T17:09:31.252Z",
       "doneAt": null,
-      "urutan": 6,
+      "urutan": 12,
       "id": "aIt1vuZ_UuE",
       "tergeserOleh": "Zz8xb2N0ESI",
       "alasanTergeser": "Tergeser oleh Pak brian (Urgent)",
@@ -425,8 +435,13 @@
       "updatedAt": "2026-11-12T17:10:50.662Z",
       "actualStart": null,
       "doneAt": null,
-      "urutan": 7,
-      "id": "StKWXUlvpcY"
+      "urutan": 13,
+      "id": "StKWXUlvpcY",
+      "tergeserOleh": null,
+      "alasanTergeser": null,
+      "jadwalAsli": null,
+      "jumlahTergeser": 0,
+      "riwayatJadwal": []
     },
     {
       "nama_orang_req": "Fahri",
@@ -456,8 +471,13 @@
       "updatedAt": "2026-11-12T17:11:28.655Z",
       "actualStart": null,
       "doneAt": null,
-      "urutan": 8,
-      "id": "6ofXkQsKsIg"
+      "urutan": 14,
+      "id": "6ofXkQsKsIg",
+      "tergeserOleh": null,
+      "alasanTergeser": null,
+      "jadwalAsli": null,
+      "jumlahTergeser": 0,
+      "riwayatJadwal": []
     },
     {
       "nama_orang_req": "Eldzan",
@@ -487,7 +507,7 @@
       "updatedAt": "2026-11-12T17:12:56.958Z",
       "actualStart": null,
       "doneAt": null,
-      "urutan": 9,
+      "urutan": 15,
       "id": "4JODsEYH7w8",
       "tergeserOleh": null,
       "alasanTergeser": null,
@@ -523,8 +543,13 @@
       "updatedAt": "2026-11-12T17:13:34.361Z",
       "actualStart": null,
       "doneAt": null,
-      "urutan": 10,
-      "id": "mLX4RvVOUyE"
+      "urutan": 16,
+      "id": "mLX4RvVOUyE",
+      "tergeserOleh": null,
+      "alasanTergeser": null,
+      "jadwalAsli": null,
+      "jumlahTergeser": 0,
+      "riwayatJadwal": []
     },
     {
       "nama_orang_req": "Divisi Editor",
@@ -559,8 +584,13 @@
       "updatedAt": "2026-11-12T17:14:24.608Z",
       "actualStart": null,
       "doneAt": null,
-      "urutan": 11,
-      "id": "YZSGK8vt2Sg"
+      "urutan": 17,
+      "id": "YZSGK8vt2Sg",
+      "tergeserOleh": null,
+      "alasanTergeser": null,
+      "jadwalAsli": null,
+      "jumlahTergeser": 0,
+      "riwayatJadwal": []
     },
     {
       "nama_orang_req": "Eldzan",
@@ -590,8 +620,13 @@
       "updatedAt": "2026-11-12T17:15:16.293Z",
       "actualStart": null,
       "doneAt": null,
-      "urutan": 12,
-      "id": "XKHO5n5-jDc"
+      "urutan": 18,
+      "id": "XKHO5n5-jDc",
+      "tergeserOleh": null,
+      "alasanTergeser": null,
+      "jadwalAsli": null,
+      "jumlahTergeser": 0,
+      "riwayatJadwal": []
     },
     {
       "nama_orang_req": "Bahy",
@@ -621,8 +656,13 @@
       "updatedAt": "2026-11-12T17:15:45.094Z",
       "actualStart": null,
       "doneAt": null,
-      "urutan": 13,
-      "id": "eZwHp8m1AP4"
+      "urutan": 19,
+      "id": "eZwHp8m1AP4",
+      "tergeserOleh": null,
+      "alasanTergeser": null,
+      "jadwalAsli": null,
+      "jumlahTergeser": 0,
+      "riwayatJadwal": []
     },
     {
       "nama_orang_req": "Nuril",
@@ -652,8 +692,13 @@
       "updatedAt": "2026-11-12T17:16:25.289Z",
       "actualStart": null,
       "doneAt": null,
-      "urutan": 14,
-      "id": "QXju-X8S_sE"
+      "urutan": 20,
+      "id": "QXju-X8S_sE",
+      "tergeserOleh": null,
+      "alasanTergeser": null,
+      "jadwalAsli": null,
+      "jumlahTergeser": 0,
+      "riwayatJadwal": []
     },
     {
       "nama_orang_req": "Kio",
@@ -689,8 +734,13 @@
       "updatedAt": "2026-11-12T17:17:12.970Z",
       "actualStart": null,
       "doneAt": null,
-      "urutan": 15,
-      "id": "LA5Bi2unzyA"
+      "urutan": 21,
+      "id": "LA5Bi2unzyA",
+      "tergeserOleh": null,
+      "alasanTergeser": null,
+      "jadwalAsli": null,
+      "jumlahTergeser": 0,
+      "riwayatJadwal": []
     },
     {
       "nama_orang_req": "Nuril",
@@ -720,8 +770,13 @@
       "updatedAt": "2026-11-12T17:17:48.654Z",
       "actualStart": null,
       "doneAt": null,
-      "urutan": 16,
-      "id": "cx_MYub-NCY"
+      "urutan": 22,
+      "id": "cx_MYub-NCY",
+      "tergeserOleh": null,
+      "alasanTergeser": null,
+      "jadwalAsli": null,
+      "jumlahTergeser": 0,
+      "riwayatJadwal": []
     },
     {
       "nama_orang_req": "Nuril",
@@ -752,8 +807,13 @@
       "updatedAt": "2026-11-12T17:18:21.233Z",
       "actualStart": null,
       "doneAt": null,
-      "urutan": 17,
-      "id": "5dvV-I45MUk"
+      "urutan": 23,
+      "id": "5dvV-I45MUk",
+      "tergeserOleh": null,
+      "alasanTergeser": null,
+      "jadwalAsli": null,
+      "jumlahTergeser": 0,
+      "riwayatJadwal": []
     },
     {
       "nama_orang_req": "Pak brian",
@@ -803,7 +863,7 @@
       "updatedAt": "2026-11-12T17:20:21.145Z",
       "actualStart": null,
       "doneAt": "2026-11-12T17:19:52.673Z",
-      "urutan": 18,
+      "urutan": 4,
       "id": "Zz8xb2N0ESI",
       "tergeserOleh": null,
       "alasanTergeser": null,
@@ -840,8 +900,13 @@
       "updatedAt": "2026-11-12T17:21:22.482Z",
       "actualStart": null,
       "doneAt": "2026-11-12T17:21:22.482Z",
-      "urutan": 19,
-      "id": "pI_cfmel67g"
+      "urutan": 24,
+      "id": "pI_cfmel67g",
+      "tergeserOleh": null,
+      "alasanTergeser": null,
+      "jadwalAsli": null,
+      "jumlahTergeser": 0,
+      "riwayatJadwal": []
     },
     {
       "nama_orang_req": "Eldzan",
@@ -871,8 +936,13 @@
       "updatedAt": "2026-11-12T17:22:16.569Z",
       "actualStart": null,
       "doneAt": "2026-11-12T17:22:16.569Z",
-      "urutan": 20,
-      "id": "EXAiWo_SEj0"
+      "urutan": 25,
+      "id": "EXAiWo_SEj0",
+      "tergeserOleh": null,
+      "alasanTergeser": null,
+      "jadwalAsli": null,
+      "jumlahTergeser": 0,
+      "riwayatJadwal": []
     },
     {
       "nama_orang_req": "Nuril",
@@ -949,8 +1019,13 @@
       "updatedAt": "2026-11-12T17:24:45.853Z",
       "actualStart": null,
       "doneAt": "2026-11-12T17:24:45.853Z",
-      "urutan": 21,
-      "id": "Nlq1Ad4mRkU"
+      "urutan": 5,
+      "id": "Nlq1Ad4mRkU",
+      "tergeserOleh": null,
+      "alasanTergeser": null,
+      "jadwalAsli": null,
+      "jumlahTergeser": 0,
+      "riwayatJadwal": []
     },
     {
       "nama_orang_req": "Nuril",
@@ -1000,7 +1075,7 @@
       "updatedAt": "2026-11-12T17:26:49.725Z",
       "actualStart": null,
       "doneAt": "2026-11-12T17:26:25.949Z",
-      "urutan": 22,
+      "urutan": 6,
       "id": "LRz1YMxGBlA",
       "tergeserOleh": null,
       "alasanTergeser": null,
@@ -1037,8 +1112,13 @@
       "updatedAt": "2026-11-12T17:27:48.304Z",
       "actualStart": null,
       "doneAt": "2026-11-12T17:27:48.304Z",
-      "urutan": 23,
-      "id": "sAHAWOcHCdc"
+      "urutan": 7,
+      "id": "sAHAWOcHCdc",
+      "tergeserOleh": null,
+      "alasanTergeser": null,
+      "jadwalAsli": null,
+      "jumlahTergeser": 0,
+      "riwayatJadwal": []
     },
     {
       "nama_orang_req": "Nuril",
@@ -1069,8 +1149,13 @@
       "updatedAt": "2026-11-12T17:28:22.804Z",
       "actualStart": null,
       "doneAt": "2026-11-12T17:28:22.804Z",
-      "urutan": 24,
-      "id": "bfJH91okNco"
+      "urutan": 26,
+      "id": "bfJH91okNco",
+      "tergeserOleh": null,
+      "alasanTergeser": null,
+      "jadwalAsli": null,
+      "jumlahTergeser": 0,
+      "riwayatJadwal": []
     },
     {
       "nama_orang_req": "Farah",
@@ -1100,8 +1185,13 @@
       "updatedAt": "2026-11-12T17:28:57.914Z",
       "actualStart": null,
       "doneAt": "2026-11-12T17:28:57.914Z",
-      "urutan": 25,
-      "id": "jY206e2KMH0"
+      "urutan": 27,
+      "id": "jY206e2KMH0",
+      "tergeserOleh": null,
+      "alasanTergeser": null,
+      "jadwalAsli": null,
+      "jumlahTergeser": 0,
+      "riwayatJadwal": []
     },
     {
       "nama_orang_req": "Nuril",
@@ -1131,8 +1221,13 @@
       "updatedAt": "2026-11-12T17:29:39.680Z",
       "actualStart": null,
       "doneAt": "2026-11-12T17:29:39.680Z",
-      "urutan": 26,
-      "id": "7tSXQmsdiFc"
+      "urutan": 28,
+      "id": "7tSXQmsdiFc",
+      "tergeserOleh": null,
+      "alasanTergeser": null,
+      "jadwalAsli": null,
+      "jumlahTergeser": 0,
+      "riwayatJadwal": []
     },
     {
       "nama_orang_req": "Pak Rian",
@@ -1163,8 +1258,13 @@
       "updatedAt": "2026-11-12T17:30:44.889Z",
       "actualStart": null,
       "doneAt": "2026-11-12T17:30:44.889Z",
-      "urutan": 27,
-      "id": "BqGAnpCnlNM"
+      "urutan": 8,
+      "id": "BqGAnpCnlNM",
+      "tergeserOleh": null,
+      "alasanTergeser": null,
+      "jadwalAsli": null,
+      "jumlahTergeser": 0,
+      "riwayatJadwal": []
     },
     {
       "nama_orang_req": "Nuril",
@@ -1197,8 +1297,13 @@
       "updatedAt": "2026-11-12T17:32:23.419Z",
       "actualStart": null,
       "doneAt": "2026-11-12T17:32:23.419Z",
-      "urutan": 28,
-      "id": "Q1WmyIEidnU"
+      "urutan": 9,
+      "id": "Q1WmyIEidnU",
+      "tergeserOleh": null,
+      "alasanTergeser": null,
+      "jadwalAsli": null,
+      "jumlahTergeser": 0,
+      "riwayatJadwal": []
     }
   ],
   "pics": [
