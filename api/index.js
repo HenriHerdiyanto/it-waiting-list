@@ -1,11 +1,12 @@
 import 'dotenv/config';
 import crypto from 'node:crypto';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync } from 'node:fs';
 import { unlink } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import express from 'express';
 import multer from 'multer';
+import { createClient } from '@supabase/supabase-js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -19,6 +20,14 @@ const CORS_ORIGIN = process.env.CORS_ORIGIN || '*';
 const MAX_UPLOAD_MB = Math.max(1, Number(process.env.MAX_UPLOAD_MB) || 10);
 const MAX_FILE_SIZE = MAX_UPLOAD_MB * 1000 * 1000;
 const MAX_FILES = Math.max(1, Number(process.env.MAX_UPLOAD_FILES) || 5);
+
+const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+const SUPABASE_KEY = process.env.SUPABASE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+
+let supabase = null;
+if (SUPABASE_URL && SUPABASE_KEY) {
+  supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+}
 
 const ALLOWED_TYPES = new Map([
   ['image/jpeg', ['.jpg', '.jpeg']],
@@ -92,7 +101,7 @@ const app = express();
 app.disable('x-powered-by');
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', CORS_ORIGIN);
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') {
@@ -104,87 +113,75 @@ app.use((req, res, next) => {
 });
 app.use(express.json({ limit: '1mb' }));
 
-const DB_PATH = path.join(ROOT_DIR, 'db.json');
-
-function readDb() {
-  try {
-    return JSON.parse(readFileSync(DB_PATH, 'utf8'));
-  } catch {
-    return { requests: [], pics: [] };
-  }
-}
-
-function writeDb(data) {
-  writeFileSync(DB_PATH, JSON.stringify(data, null, 2), 'utf8');
-}
-
-app.get('/api/requests', (_req, res) => {
-  res.json(readDb().requests ?? []);
+// Supabase API Routes
+app.get('/api/requests', async (_req, res) => {
+  if (!supabase) return res.status(500).json({ message: 'Supabase belum dikonfigurasi.' });
+  const { data, error } = await supabase.from('requests').select('*').order('urutan', { ascending: true, nullsLast: true });
+  if (error) return res.status(500).json({ message: error.message });
+  res.json(data);
 });
 
-app.get('/api/requests/:id', (_req, res) => {
-  const item = readDb().requests?.find((r) => String(r.id) === String(_req.params.id));
-  if (!item) return res.status(404).json({ message: 'Request tidak ditemukan.' });
-  res.json(item);
+app.get('/api/requests/:id', async (req, res) => {
+  if (!supabase) return res.status(500).json({ message: 'Supabase belum dikonfigurasi.' });
+  const { data, error } = await supabase.from('requests').select('*').eq('id', req.params.id).single();
+  if (error) return res.status(404).json({ message: 'Request tidak ditemukan.' });
+  res.json(data);
 });
 
-app.get('/api/pics', (_req, res) => {
-  res.json(readDb().pics ?? []);
+app.post('/api/requests', async (req, res) => {
+  if (!supabase) return res.status(500).json({ message: 'Supabase belum dikonfigurasi.' });
+  const payload = req.body;
+  const { data, error } = await supabase.from('requests').insert([payload]).select().single();
+  if (error) return res.status(500).json({ message: error.message });
+  res.status(201).json(data);
 });
 
-app.post('/api/requests', (_req, res) => {
-  try {
-    const db = readDb();
-    const payload = _req.body;
-    const id = String(Date.now());
-    const item = {
-      id,
-      ...payload,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    if (!Array.isArray(db.requests)) db.requests = [];
-    db.requests.push(item);
-    writeDb(db);
-    res.status(201).json(item);
-  } catch {
-    res.status(500).json({ message: 'Gagal menyimpan data.' });
-  }
+app.put('/api/requests/:id', async (req, res) => {
+  if (!supabase) return res.status(500).json({ message: 'Supabase belum dikonfigurasi.' });
+  const payload = req.body;
+  delete payload.id; // jangan timpa primary key
+  const { data, error } = await supabase.from('requests').update({ ...payload, updatedAt: new Date().toISOString() }).eq('id', req.params.id).select().single();
+  if (error) return res.status(500).json({ message: error.message });
+  res.json(data);
 });
 
-app.put('/api/requests/:id', (_req, res) => {
-  try {
-    const db = readDb();
-    const idx = (db.requests ?? []).findIndex((r) => String(r.id) === String(_req.params.id));
-    if (idx === -1) return res.status(404).json({ message: 'Request tidak ditemukan.' });
-    db.requests[idx] = {
-      ...db.requests[idx],
-      ..._req.body,
-      id: _req.params.id,
-      updatedAt: new Date().toISOString(),
-    };
-    writeDb(db);
-    res.json(db.requests[idx]);
-  } catch {
-    res.status(500).json({ message: 'Gagal memperbarui data.' });
-  }
+app.delete('/api/requests/:id', async (req, res) => {
+  if (!supabase) return res.status(500).json({ message: 'Supabase belum dikonfigurasi.' });
+  const { error } = await supabase.from('requests').delete().eq('id', req.params.id);
+  if (error) return res.status(500).json({ message: error.message });
+  res.status(204).end();
 });
 
-app.delete('/api/requests/:id', (_req, res) => {
-  try {
-    const db = readDb();
-    const idx = (db.requests ?? []).findIndex((r) => String(r.id) === String(_req.params.id));
-    if (idx === -1) return res.status(404).json({ message: 'Request tidak ditemukan.' });
-    db.requests.splice(idx, 1);
-    writeDb(db);
-    res.status(204).end();
-  } catch {
-    res.status(500).json({ message: 'Gagal menghapus data.' });
-  }
+app.get('/api/pics', async (_req, res) => {
+  if (!supabase) return res.status(500).json({ message: 'Supabase belum dikonfigurasi.' });
+  const { data, error } = await supabase.from('pics').select('*');
+  if (error) return res.status(500).json({ message: error.message });
+  res.json(data);
+});
+
+app.post('/api/pics', async (req, res) => {
+  if (!supabase) return res.status(500).json({ message: 'Supabase belum dikonfigurasi.' });
+  const { data, error } = await supabase.from('pics').insert([req.body]).select().single();
+  if (error) return res.status(500).json({ message: error.message });
+  res.status(201).json(data);
+});
+
+app.put('/api/pics/:id', async (req, res) => {
+  if (!supabase) return res.status(500).json({ message: 'Supabase belum dikonfigurasi.' });
+  const { data, error } = await supabase.from('pics').update(req.body).eq('id', req.params.id).select().single();
+  if (error) return res.status(500).json({ message: error.message });
+  res.json(data);
+});
+
+app.delete('/api/pics/:id', async (req, res) => {
+  if (!supabase) return res.status(500).json({ message: 'Supabase belum dikonfigurasi.' });
+  const { error } = await supabase.from('pics').delete().eq('id', req.params.id);
+  if (error) return res.status(500).json({ message: error.message });
+  res.status(204).end();
 });
 
 app.get('/api/health', (_req, res) => {
-  res.json({ ok: true, maxFileSizeMb: MAX_UPLOAD_MB, maxFiles: MAX_FILES });
+  res.json({ ok: true, supabaseConnected: !!supabase, maxFileSizeMb: MAX_UPLOAD_MB, maxFiles: MAX_FILES });
 });
 
 app.use(
@@ -261,12 +258,9 @@ app.use((error, _req, res, _next) => {
   res.status(500).json({ message: 'Terjadi kesalahan pada server upload.' });
 });
 
-// Tidak dipakai di Vercel (serverless). Vercel mengekspor app sebagai handler.
 if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
   app.listen(PORT, () => {
-    console.log(`Upload server berjalan di http://localhost:${PORT}`);
-    console.log(`Folder upload: ${UPLOAD_DIR}`);
-    console.log(`Batas file: ${MAX_UPLOAD_MB} MB/file, maksimal ${MAX_FILES} file.`);
+    console.log(`Server berjalan di http://localhost:${PORT}`);
   });
 }
 
