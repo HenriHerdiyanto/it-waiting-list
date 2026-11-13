@@ -13,7 +13,10 @@ const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, '..');
 
 const PORT = Number(process.env.PORT) || 3002;
-const UPLOAD_DIR = path.resolve(ROOT_DIR, process.env.UPLOAD_DIR || 'uploads');
+// Di Vercel, disk fungsi bersifat read-only kecuali /tmp.
+const UPLOAD_DIR = process.env.VERCEL
+  ? path.join('/tmp', 'uploads')
+  : path.resolve(ROOT_DIR, process.env.UPLOAD_DIR || 'uploads');
 const DIST_DIR = path.join(ROOT_DIR, 'dist');
 const PUBLIC_UPLOAD_URL = String(process.env.PUBLIC_UPLOAD_URL || '').replace(/\/+$/, '');
 const CORS_ORIGIN = process.env.CORS_ORIGIN || '*';
@@ -37,7 +40,11 @@ const ALLOWED_TYPES = new Map([
   ['application/pdf', ['.pdf']],
 ]);
 
-mkdirSync(UPLOAD_DIR, { recursive: true });
+try {
+  mkdirSync(UPLOAD_DIR, { recursive: true });
+} catch (error) {
+  console.warn(`Folder upload tidak bisa dibuat (${UPLOAD_DIR}):`, error.message);
+}
 
 const storage = multer.diskStorage({
   destination: (_req, _file, callback) => callback(null, UPLOAD_DIR),
