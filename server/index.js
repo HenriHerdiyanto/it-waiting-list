@@ -26,6 +26,8 @@ const ALLOWED_TYPES = new Map([
   ['image/webp', ['.webp']],
   ['image/gif', ['.gif']],
   ['application/pdf', ['.pdf']],
+  ['application/msword', ['.doc']],
+  ['application/vnd.openxmlformats-officedocument.wordprocessingml.document', ['.docx']],
 ]);
 
 mkdirSync(UPLOAD_DIR, { recursive: true });
@@ -50,7 +52,7 @@ const upload = multer({
 
     if (!extensions || !extensions.includes(extension)) {
       callback(
-        new Error('Tipe file tidak didukung. Gunakan gambar JPG/PNG/WEBP/GIF atau PDF.'),
+        new Error('Tipe file tidak didukung. Gunakan gambar JPG/PNG/WEBP/GIF, PDF, atau Word (DOC/DOCX).'),
       );
       return;
     }

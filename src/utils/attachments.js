@@ -3,23 +3,50 @@ export const MAX_ATTACHMENT_SIZE_MB = 10;
 // Cloudinary Free membatasi file 10 MB (desimal), jadi samakan batasnya.
 export const MAX_ATTACHMENT_SIZE = MAX_ATTACHMENT_SIZE_MB * 1000 * 1000;
 
+export const WORD_TYPES = [
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+];
+
 export const ALLOWED_ATTACHMENT_TYPES = [
   'image/jpeg',
   'image/png',
   'image/webp',
   'image/gif',
   'application/pdf',
+  ...WORD_TYPES,
 ];
 
+/** Tipe file berdasarkan ekstensi, dipakai jika browser tidak mengisi file.type. */
+const TYPE_BY_EXTENSION = {
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  png: 'image/png',
+  webp: 'image/webp',
+  gif: 'image/gif',
+  pdf: 'application/pdf',
+  doc: 'application/msword',
+  docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+};
+
 export const ATTACHMENT_ACCEPT = [
-  '.jpg',
-  '.jpeg',
-  '.png',
-  '.webp',
-  '.gif',
-  '.pdf',
+  ...Object.keys(TYPE_BY_EXTENSION).map((extension) => `.${extension}`),
   ...ALLOWED_ATTACHMENT_TYPES,
 ].join(',');
+
+export const ATTACHMENT_HINT = 'Gambar JPG/PNG/WEBP/GIF, PDF, atau Word (DOC/DOCX)';
+
+function extensionOf(value) {
+  const match = /\.([a-z0-9]+)$/i.exec(String(value ?? '').split('?')[0]);
+  return match ? match[1].toLowerCase() : '';
+}
+
+/** MIME type file; jika kosong (sering terjadi untuk .doc/.docx), ditebak dari ekstensi. */
+export function resolveAttachmentType(file) {
+  const type = String(file?.type ?? '').trim().toLowerCase();
+  if (type && type !== 'application/octet-stream') return type;
+  return TYPE_BY_EXTENSION[extensionOf(file?.name)] ?? type;
+}
 
 function fileNameFromUrl(value) {
   const url = String(value ?? '').split('?')[0];
@@ -68,8 +95,8 @@ export function normalizeAttachments(value) {
 export function validateAttachmentFile(file) {
   if (!file) return 'File tidak valid.';
 
-  if (!ALLOWED_ATTACHMENT_TYPES.includes(file.type)) {
-    return `File "${file.name}" harus berupa gambar JPG/PNG/WEBP/GIF atau PDF.`;
+  if (!ALLOWED_ATTACHMENT_TYPES.includes(resolveAttachmentType(file))) {
+    return `File "${file.name}" harus berupa ${ATTACHMENT_HINT}.`;
   }
 
   if (file.size <= 0) {
@@ -111,4 +138,45 @@ export function isSafeAttachmentUrl(value) {
   } catch {
     return false;
   }
+}
+
+export function isWordAttachment(attachment) {
+  const type = String(attachment?.type ?? '').toLowerCase();
+  if (WORD_TYPES.includes(type)) return true;
+
+  const extension = extensionOf(attachment?.url) || extensionOf(attachment?.name);
+  return extension === 'doc' || extension === 'docx';
+}
+
+export function attachmentKindLabel(attachment) {
+  if (isImageAttachment(attachment)) return 'Gambar';
+  if (isPdfAttachment(attachment)) return 'PDF';
+  if (isWordAttachment(attachment)) return 'Word';
+  return 'File';
+}
+
+function isPublicHttpUrl(value) {
+  try {
+    const url = new URL(String(value ?? ''));
+    if (url.protocol !== 'https:' && url.protocol !== 'http:') return false;
+    return !['localhost', '127.0.0.1', '0.0.0.0'].includes(url.hostname);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * URL untuk membuka lampiran di tab baru. Browser tidak bisa menampilkan
+ * Word secara langsung, jadi file Word yang URL-nya publik dibuka lewat
+ * Microsoft Office Online Viewer. Selain itu URL asli dipakai apa adanya.
+ */
+export function getAttachmentViewUrl(attachment) {
+  const url = String(attachment?.url ?? '').trim();
+  if (!isSafeAttachmentUrl(url)) return '';
+
+  if (isWordAttachment(attachment) && isPublicHttpUrl(url)) {
+    return `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(url)}`;
+  }
+
+  return url;
 }

@@ -38,6 +38,8 @@ const ALLOWED_TYPES = new Map([
   ['image/webp', ['.webp']],
   ['image/gif', ['.gif']],
   ['application/pdf', ['.pdf']],
+  ['application/msword', ['.doc']],
+  ['application/vnd.openxmlformats-officedocument.wordprocessingml.document', ['.docx']],
 ]);
 
 try {
@@ -66,7 +68,7 @@ const upload = multer({
 
     if (!extensions || !extensions.includes(extension)) {
       callback(
-        new Error('Tipe file tidak didukung. Gunakan gambar JPG/PNG/WEBP/GIF atau PDF.'),
+        new Error('Tipe file tidak didukung. Gunakan gambar JPG/PNG/WEBP/GIF, PDF, atau Word (DOC/DOCX).'),
       );
       return;
     }
@@ -206,6 +208,16 @@ app.use('/uploads', (_req, res) => {
 });
 
 app.post('/api/uploads', (req, res) => {
+  if (process.env.VERCEL) {
+    // Disk Vercel (/tmp) tidak permanen dan tidak dibagi antar instance, jadi
+    // file yang disimpan di sini akan hilang. Lampiran harus ke Supabase Storage.
+    res.status(501).json({
+      message:
+        'Upload ke server tidak didukung di Vercel. Set VITE_SUPABASE_URL dan VITE_SUPABASE_ANON_KEY agar lampiran disimpan di Supabase Storage.',
+    });
+    return;
+  }
+
   upload.array('files', MAX_FILES)(req, res, async (error) => {
     if (error) {
       await removeFiles(req.files);

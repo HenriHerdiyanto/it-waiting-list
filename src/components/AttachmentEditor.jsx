@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import {
   ATTACHMENT_ACCEPT,
+  ATTACHMENT_HINT,
+  attachmentKindLabel,
+  getAttachmentViewUrl,
   isImageAttachment,
-  isPdfAttachment,
-  isSafeAttachmentUrl, 
+  isSafeAttachmentUrl,
   MAX_ATTACHMENT_SIZE_MB,
   MAX_ATTACHMENTS,
   validateAttachmentFile,
@@ -100,7 +102,7 @@ export default function AttachmentEditor({
           />
         </label>
         <small className="hint">
-          Gambar JPG/PNG/WEBP/GIF atau PDF · maksimal {MAX_ATTACHMENT_SIZE_MB} MB/file ·
+          {ATTACHMENT_HINT} · maksimal {MAX_ATTACHMENT_SIZE_MB} MB/file ·
           maksimal {MAX_ATTACHMENTS} lampiran
         </small>
       </div>
@@ -120,11 +122,8 @@ export default function AttachmentEditor({
           {attachments.map((attachment) => {
             const safeUrl = isSafeAttachmentUrl(attachment.url) ? attachment.url : '';
             const isImage = isImageAttachment(attachment);
-            const fileKind = isImage
-              ? 'Gambar'
-              : isPdfAttachment(attachment)
-                ? 'PDF'
-                : 'File';
+            const fileKind = attachmentKindLabel(attachment);
+            const viewUrl = getAttachmentViewUrl(attachment);
 
             return (
               <div className="attachment-item" key={attachment.id}>
@@ -150,8 +149,8 @@ export default function AttachmentEditor({
                 )}
 
                 <div className="attachment-meta">
-                  {safeUrl ? (
-                    <a href={safeUrl} target="_blank" rel="noopener noreferrer">
+                  {viewUrl ? (
+                    <a href={viewUrl} target="_blank" rel="noopener noreferrer">
                       {attachment.name}
                     </a>
                   ) : (

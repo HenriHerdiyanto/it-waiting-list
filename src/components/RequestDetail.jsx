@@ -8,8 +8,9 @@ import {
   getDisplayDescription,
 } from '../utils/format';
 import {
+  attachmentKindLabel,
+  getAttachmentViewUrl,
   isImageAttachment,
-  isPdfAttachment,
   isSafeAttachmentUrl,
 } from '../utils/attachments';
 import { formatLinkLabel, isValidLinkUrl } from '../utils/links';
@@ -155,11 +156,11 @@ export default function RequestDetail({ request, busy, isLoggedIn, onClose, onTo
                 const safeUrl = isSafeAttachmentUrl(attachment.url)
                   ? attachment.url
                   : '';
+                const viewUrl = getAttachmentViewUrl(attachment);
                 const isImage = isImageAttachment(attachment);
-                const isPdf = isPdfAttachment(attachment);
-                const meta = `${formatFileSize(attachment.size)} · ${
-                  isImage ? 'Gambar' : isPdf ? 'PDF' : 'File'
-                }`;
+                const meta = `${formatFileSize(attachment.size)} · ${attachmentKindLabel(
+                  attachment,
+                )}`;
 
                 const content = (
                   <>
@@ -195,7 +196,7 @@ export default function RequestDetail({ request, busy, isLoggedIn, onClose, onTo
                     className={`detail-attachment ${
                       isImage ? 'detail-attachment-image' : 'detail-attachment-file'
                     }`}
-                    href={safeUrl}
+                    href={viewUrl || safeUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     key={attachment.id}

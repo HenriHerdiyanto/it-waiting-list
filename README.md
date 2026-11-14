@@ -7,7 +7,7 @@ Aplikasi web untuk mencatat, memantau, menjadwalkan, dan mengurutkan request/per
 - **Tab Aktif, Revisi, Pending & Selesai** — `On Proses`/`Waiting` di tab Aktif, `Revisi` di tab sendiri, `Pending` di tab sendiri, dan `Done` diarsipkan di tab Selesai.
 - **Alur revisi** — request `Done` yang masih bermasalah bisa diubah ke `Revisi` lewat dropdown status atau tombol cepat di tab Selesai. Saat masuk `Revisi`, **deskripsi revisi wajib diisi**. Tanggal selesai terakhir tetap tersimpan, sedangkan tanggal dan roadmap tidak diubah otomatis.
 - **Deskripsi sesuai status** — selama status `Revisi`, tabel dan detail menampilkan **deskripsi revisi**. Untuk status lain yang tampil adalah deskripsi awal. Deskripsi awal tetap bisa dibuka dari detail request.
-- **Link tambahan & lampiran** — deskripsi cukup menjelaskan kebutuhan/pekerjaan. Link Figma, spreadsheet, atau referensi lain disimpan sebagai daftar link berjudul; gambar dan PDF diunggah terpisah sebagai lampiran (maksimal 10 MB per file dan 5 lampiran per request).
+- **Link tambahan & lampiran** — deskripsi cukup menjelaskan kebutuhan/pekerjaan. Link Figma, spreadsheet, atau referensi lain disimpan sebagai daftar link berjudul; gambar, PDF, dan dokumen Word diunggah terpisah sebagai lampiran (maksimal 10 MB per file dan 5 lampiran per request).
 - **Timeline per request** — tanggal mulai **opsional** (kosongkan jika jadwal belum ditentukan); jika diisi, cukup lengkapi durasi hari kalender dan estimasi selesai dihitung otomatis (hanya-baca), plus realisasi mulai dan tanggal selesai.
 - **Roadmap per request** — generate otomatis per hari atau susun langkah custom dengan durasi berbeda; total durasi ikut menyesuaikan saat durasi request berubah.
 - **Prioritas berjenjang** — `Normal`, `Tinggi`, dan `Urgent`.
@@ -181,20 +181,24 @@ npm start
 
 ### Deploy ke Vercel
 
-Vercel hanya menyajikan hasil build frontend (`dist/`). Server Express di `server/index.js` tidak ikut berjalan, jadi upload tidak boleh bergantung pada folder `uploads/` lokal. Gunakan Cloudinary Free agar lampiran tetap bisa diunggah dan dilihat:
+Vercel menjalankan `api/index.js` sebagai serverless function. Disk function itu (`/tmp`) **tidak permanen** dan tidak dibagi antar instance, sehingga file yang diunggah ke sana akan hilang. Karena itu di Vercel lampiran disimpan di **Supabase Storage** dan browser mengunggahnya langsung ke sana. Endpoint `/api/uploads` sengaja menolak upload saat berjalan di Vercel.
 
-1. Buat akun gratis di [Cloudinary](https://cloudinary.com), lalu catat **Cloud name**.
-2. Buat **unsigned upload preset** di Settings → Upload → Upload presets dengan allowed formats `jpg,png,webp,gif,pdf`.
-3. Aktifkan **Allow delivery of PDF and ZIP files** di Settings → Security agar PDF bisa dibuka di browser.
-4. Di Vercel → Settings → Environment Variables, tambahkan:
+1. Di Supabase Dashboard → **SQL Editor**, jalankan isi file `supabase/storage.sql`. Perintah ini membuat bucket publik `attachments` (maks 10 MB, gambar/PDF/Word) beserta policy baca & unggah.
+2. Di Supabase Dashboard → **Project Settings → API**, salin **Project URL** dan **anon public key**.
+3. Di Vercel → Settings → Environment Variables, tambahkan:
    ```env
-   VITE_UPLOAD_PROVIDER=cloudinary
-   VITE_CLOUDINARY_CLOUD_NAME=cloud_name_anda
-   VITE_CLOUDINARY_UPLOAD_PRESET=nama_preset_anda
+   VITE_SUPABASE_URL=https://xxxx.supabase.co
+   VITE_SUPABASE_ANON_KEY=anon_key_anda
+   VITE_SUPABASE_BUCKET=attachments
    ```
-5. Pastikan **Framework Preset** di Vercel adalah **Vite**, bukan `Other`.
-6. Redeploy, karena Vite membaca environment variable saat build.
-7. File `vercel.json` sudah menyertakan rewrite SPA agar halaman seperti `/login`, `/dashboard`, dan `/admin/...` tidak 404 saat di-refresh atau dibuka langsung.
+   Hapus `VITE_UPLOAD_PROVIDER` jika pernah diisi `local`, atau isi `supabase`.
+4. Pastikan **Framework Preset** di Vercel adalah **Vite**, bukan `Other`.
+5. **Redeploy**, karena Vite membaca environment variable saat build.
+6. Lampiran lama dengan URL `/uploads/...` hanya ada di komputer tempat file itu diunggah. Unggah ulang lampiran tersebut lewat form edit request.
+
+`vercel.json` menyertakan rewrite SPA agar halaman seperti `/login`, `/dashboard`, dan `/admin/...` tidak 404 saat di-refresh atau dibuka langsung. Path `/api/...` dan `/uploads/...` dikecualikan dari rewrite.
+
+Cloudinary tetap didukung sebagai alternatif (`VITE_CLOUDINARY_CLOUD_NAME` + `VITE_CLOUDINARY_UPLOAD_PRESET`); lihat bagian Upload Lampiran.
 
 Login admin default:
 
@@ -210,7 +214,10 @@ VITE_API_URL=https://6ae305fe933120ae20f80e32.mockapi.io/requests
 VITE_PIC_API_URL=
 VITE_ADMIN_USER=admin
 VITE_ADMIN_PASS=admin123
-VITE_UPLOAD_PROVIDER=local
+VITE_SUPABASE_URL=
+VITE_SUPABASE_ANON_KEY=
+VITE_SUPABASE_BUCKET=attachments
+VITE_UPLOAD_PROVIDER=
 VITE_UPLOAD_URL=/api/uploads
 VITE_CLOUDINARY_CLOUD_NAME=
 VITE_CLOUDINARY_UPLOAD_PRESET=
@@ -224,7 +231,7 @@ MAX_UPLOAD_FILES=5
 
 `VITE_PIC_API_URL` boleh dikosongkan; aplikasi akan menurunkan alamatnya dari `VITE_API_URL` dengan mengganti `/requests` menjadi `/pics`. Isi variabel ini jika master PIC berada di endpoint yang berbeda.
 
-`VITE_UPLOAD_PROVIDER` menentukan tujuan upload: `local` memakai server Express melalui `VITE_UPLOAD_URL`, sedangkan `cloudinary` mengunggah langsung dari browser ke Cloudinary. Jika `VITE_UPLOAD_PROVIDER` tidak diisi tetapi `VITE_CLOUDINARY_CLOUD_NAME` dan `VITE_CLOUDINARY_UPLOAD_PRESET` diisi, aplikasi otomatis memakai mode Cloudinary.
+`VITE_UPLOAD_PROVIDER` menentukan tujuan upload: `supabase` mengunggah ke Supabase Storage, `cloudinary` mengunggah ke Cloudinary, dan `local` memakai server Express melalui `VITE_UPLOAD_URL`. Jika tidak diisi, aplikasi memilih otomatis: Supabase bila `VITE_SUPABASE_URL` dan `VITE_SUPABASE_ANON_KEY` diisi, lalu Cloudinary bila kredensialnya diisi, selain itu lokal.
 
 `VITE_UPLOAD_URL` adalah endpoint upload lokal dari sisi frontend. Nilai default `/api/uploads` memakai same-origin sehingga cocok untuk proxy Vite maupun server produksi. Jika frontend dan server upload berada di origin berbeda, isi URL lengkap (misalnya `https://files.contoh.com/api/uploads`) dan sesuaikan `CORS_ORIGIN`. Variabel ini tidak dipakai saat mode Cloudinary aktif.
 
@@ -255,14 +262,22 @@ VITE_API_URL=http://localhost:3001/requests
 
 Link tambahan tidak diunggah ke server; hanya URL dan judulnya yang disimpan di field `links`. Sebaliknya, gambar dan PDF disimpan sebagai file fisik:
 
-- **Jenis file**: JPG/JPEG, PNG, WebP, GIF, dan PDF.
+- **Jenis file**: JPG/JPEG, PNG, WebP, GIF, PDF, dan Word (DOC/DOCX).
+- **Melihat file**: gambar dan PDF dibuka langsung di browser. Word dibuka lewat Microsoft Office Online Viewer (hanya untuk URL publik seperti Supabase Storage; di mode lokal file Word akan terunduh).
 - **Batas**: 10 MB per file dan maksimal 5 lampiran per request.
 - **Waktu upload**: file baru diunggah saat form disimpan, sehingga membatalkan edit tidak meninggalkan file yatim.
 - **Penyimpanan metadata**: hanya metadata lampiran yang disimpan di record request (MockAPI/json-server).
 
-Ada dua mode penyimpanan:
+Ada tiga mode penyimpanan:
 
-### Mode lokal (default)
+### Mode Supabase Storage (disarankan, wajib untuk Vercel)
+
+- Aktif otomatis jika `VITE_SUPABASE_URL` dan `VITE_SUPABASE_ANON_KEY` diisi (atau `VITE_UPLOAD_PROVIDER=supabase`).
+- Browser mengunggah langsung ke bucket `VITE_SUPABASE_BUCKET` (default `attachments`) dengan path `tahun/bulan/uuid.ext`.
+- URL yang disimpan adalah URL publik Supabase, sehingga bisa dibuka dari deployment mana pun.
+- Siapkan bucket dan policy dengan `supabase/storage.sql`.
+
+### Mode lokal (default jika Supabase/Cloudinary tidak diisi)
 
 - **Endpoint**: `POST /api/uploads` dengan field multipart `files`; respons berisi array `{ id, name, type, size, url }`.
 - **Akses file**: `GET /uploads/<nama-file>`; file diberi nama UUID agar tidak bentrok.
@@ -295,6 +310,8 @@ Menghapus lampiran dari request hanya menghapus referensinya, bukan file fisikny
 
 ```
 vercel.json                   # Build Vercel + rewrite SPA
+supabase/
+└─ storage.sql                # Bucket & policy Supabase Storage untuk lampiran
 server/
 └─ index.js                   # Upload file lokal, static /uploads, & serve dist (produksi)
 uploads/                      # File lampiran mode lokal (tidak di-commit; butuh disk persisten)
@@ -323,7 +340,7 @@ src/
 │  └─ PicFormPage.jsx
 ├─ services/
 │  ├─ picStore.js             # Master PIC via API + fallback localStorage
-│  └─ uploadStore.js          # Upload lampiran ke server lokal / Cloudinary
+│  └─ uploadStore.js          # Upload lampiran ke Supabase Storage / Cloudinary / server lokal
 ├─ utils/
 │  ├─ date.js                 # Utilitas tanggal kalender & overlap
 │  ├─ schedule.js             # Kesehatan jadwal & rencana keterangan bentrok
